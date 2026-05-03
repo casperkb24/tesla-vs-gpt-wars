@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, Send, ShoppingCart, Swords } from "lucide-react";
+import { Copy, Check, Send, ShoppingCart, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
@@ -24,34 +24,34 @@ const Index = () => {
       {/* Nav */}
       <header className="relative z-10 flex items-center justify-between px-5 py-5 md:px-10">
         <div className="flex items-center gap-2 font-bold tracking-tight">
-          <Swords className="h-5 w-5 text-neon" />
-          <span>$VSAI</span>
+          <Terminal className="h-5 w-5 text-matrix" />
+          <span className="text-matrix text-glow">$VSAI</span>
         </div>
         <a
           href={TELEGRAM_URL}
           target="_blank"
           rel="noreferrer"
-          className="text-xs md:text-sm text-muted-foreground hover:text-foreground transition"
+          className="text-xs md:text-sm text-muted-foreground hover:text-matrix transition"
         >
           telegram ↗
         </a>
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-10 pb-8 text-center md:pt-20">
-        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon" />
+      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-10 pb-12 text-center md:pt-20">
+        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-matrix/40 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-matrix backdrop-blur">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-matrix" />
           live on-chain
         </span>
 
-        <h1 className="text-5xl font-black leading-[0.95] tracking-tight md:text-7xl">
-          <span className="text-tesla">$VSAI</span>
+        <h1 className="text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
+          AI War is <span className="text-matrix text-glow">LIVE</span> on-chain
         </h1>
-        <p className="mt-4 text-lg font-semibold md:text-2xl">
-          AI War is on-chain
+        <p className="mt-4 text-base font-semibold text-foreground md:text-xl">
+          Tesla Bot <span className="text-matrix">vs</span> GPT Bot — Pick a side.
         </p>
-        <p className="mt-3 text-sm text-muted-foreground md:text-base">
-          Tesla Bot <span className="text-tesla">vs</span> GPT Bot — pick a side.
+        <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+          &gt;_ CA below — early
         </p>
 
         {/* VS Bots */}
@@ -62,15 +62,15 @@ const Index = () => {
 
         {/* Contract */}
         <div className="mt-10 w-full">
-          <p className="mb-2 text-left text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Contract Address
+          <p className="mb-2 text-left text-[11px] uppercase tracking-[0.25em] text-matrix">
+            CA below
           </p>
           <button
             onClick={handleCopy}
-            className="group flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card/70 px-4 py-3 text-left backdrop-blur transition hover:border-neon"
+            className="group flex w-full items-center justify-between gap-3 rounded-xl border border-matrix/30 bg-card/70 px-4 py-3 text-left backdrop-blur transition hover:border-matrix"
           >
-            <span className="truncate text-xs md:text-sm">{CONTRACT_ADDRESS}</span>
-            <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground group-hover:text-neon">
+            <span className="truncate text-xs md:text-sm text-foreground">{CONTRACT_ADDRESS}</span>
+            <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground group-hover:text-matrix">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? "copied" : "copy"}
             </span>
@@ -82,8 +82,8 @@ const Index = () => {
           <Button
             asChild
             size="lg"
-            className="h-12 flex-1 bg-neon text-background hover:bg-neon/90 hover:text-background font-bold"
-            style={{ backgroundColor: "hsl(var(--neon))" }}
+            className="h-12 flex-1 font-bold text-background hover:opacity-90"
+            style={{ backgroundColor: "hsl(var(--matrix))" }}
           >
             <a href={BUY_URL} target="_blank" rel="noreferrer">
               <ShoppingCart className="mr-2 h-4 w-4" />
@@ -94,7 +94,7 @@ const Index = () => {
             asChild
             size="lg"
             variant="outline"
-            className="h-12 flex-1 border-border bg-card/60 backdrop-blur hover:bg-card font-bold"
+            className="h-12 flex-1 border-matrix/50 bg-card/60 text-matrix backdrop-blur hover:bg-matrix/10 hover:text-matrix font-bold"
           >
             <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
               <Send className="mr-2 h-4 w-4" />
@@ -116,7 +116,7 @@ const BotCard = ({ side, name, tag }: { side: "tesla" | "gpt"; name: string; tag
   return (
     <div
       className={`relative overflow-hidden rounded-xl border bg-card/60 p-4 backdrop-blur transition hover:-translate-y-0.5 md:p-6 ${
-        isTesla ? "border-tesla/40 hover:glow-tesla" : "border-gpt/40 hover:glow-gpt"
+        isTesla ? "border-tesla/40 hover:glow-tesla" : "border-gpt/50 hover:glow-gpt"
       }`}
     >
       <div
@@ -129,7 +129,9 @@ const BotCard = ({ side, name, tag }: { side: "tesla" | "gpt"; name: string; tag
           {tag}
         </span>
         <span className="text-lg font-bold md:text-2xl">{name}</span>
-        <span className="text-[11px] text-muted-foreground">faction.online</span>
+        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          pick side
+        </span>
       </div>
     </div>
   );
