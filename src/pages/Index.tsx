@@ -115,13 +115,15 @@ const BotCard = ({ side, name, tag }: { side: "tesla" | "gpt"; name: string; tag
   const isTesla = side === "tesla";
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-card/60 p-4 backdrop-blur transition hover:-translate-y-0.5 md:p-6 ${
-        isTesla ? "border-tesla/40 hover:glow-tesla" : "border-gpt/50 hover:glow-gpt"
+      className={`relative overflow-hidden rounded-xl border bg-card/60 p-4 backdrop-blur transition duration-300 hover:-translate-y-0.5 md:p-6 ${
+        isTesla
+          ? "border-tesla/40 glow-tesla-soft hover:glow-tesla hover:border-tesla"
+          : "border-gpt/40 glow-gpt-soft hover:glow-gpt hover:border-gpt"
       }`}
     >
       <div
-        className={`absolute -right-6 -top-6 h-20 w-20 rounded-full blur-2xl ${
-          isTesla ? "bg-tesla/40" : "bg-gpt/40"
+        className={`absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl transition-opacity ${
+          isTesla ? "bg-tesla/30" : "bg-gpt/30"
         }`}
       />
       <div className="relative flex flex-col items-start gap-2">
