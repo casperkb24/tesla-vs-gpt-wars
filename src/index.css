@@ -34,9 +34,9 @@
 
     --radius: 0.75rem;
 
-    /* Brand - matrix green theme */
-    --tesla: 140 90% 55%;    /* bright matrix green (was red) */
-    --gpt: 150 80% 45%;      /* deep green */
+    /* Brand - tesla blue vs gpt matrix green */
+    --tesla: 205 100% 60%;   /* electric blue */
+    --gpt: 145 90% 50%;      /* matrix green */
     --neon: 130 100% 55%;    /* neon green accent */
     --matrix: 145 100% 50%;  /* core matrix */
   }
@@ -49,8 +49,9 @@
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     background-color: #000;
     background-image:
-      radial-gradient(circle at 20% 10%, hsl(var(--gpt) / 0.22), transparent 50%),
-      radial-gradient(circle at 80% 90%, hsl(var(--matrix) / 0.18), transparent 50%);
+      radial-gradient(ellipse 60% 70% at 0% 30%, hsl(var(--tesla) / 0.18), transparent 60%),
+      radial-gradient(ellipse 60% 70% at 100% 70%, hsl(var(--gpt) / 0.18), transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 100%, hsl(var(--matrix) / 0.06), transparent 70%);
     background-attachment: fixed;
   }
 }
@@ -64,8 +65,10 @@
   .border-tesla { border-color: hsl(var(--tesla)); }
   .border-gpt { border-color: hsl(var(--gpt)); }
 
-  .glow-tesla { box-shadow: 0 0 40px hsl(var(--tesla) / 0.55); }
-  .glow-gpt { box-shadow: 0 0 40px hsl(var(--gpt) / 0.55); }
+  .glow-tesla-soft { box-shadow: 0 0 20px hsl(var(--tesla) / 0.2), inset 0 0 20px hsl(var(--tesla) / 0.05); }
+  .glow-gpt-soft { box-shadow: 0 0 20px hsl(var(--gpt) / 0.2), inset 0 0 20px hsl(var(--gpt) / 0.05); }
+  .glow-tesla { box-shadow: 0 0 50px hsl(var(--tesla) / 0.6), 0 0 90px hsl(var(--tesla) / 0.25); }
+  .glow-gpt { box-shadow: 0 0 50px hsl(var(--gpt) / 0.6), 0 0 90px hsl(var(--gpt) / 0.25); }
   .text-matrix { color: hsl(var(--matrix)); }
   .text-glow { text-shadow: 0 0 20px hsl(var(--matrix) / 0.6); }
 
