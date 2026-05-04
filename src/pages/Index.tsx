@@ -10,11 +10,8 @@ const TELEGRAM_URL = "#";
 const Index = () => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(CONTRACT_ADDRESS);
-    setCopied(true);
-    toast({ title: "Contract copied", description: "Address in clipboard." });
-    setTimeout(() => setCopied(false), 1800);
+  const handleCopy = () => {
+    toast({ title: "Not available yet", description: "Contract launches soon. Join Telegram for updates." });
   };
 
   return (
@@ -41,17 +38,17 @@ const Index = () => {
       <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-10 pb-12 text-center md:pt-20">
         <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-matrix/40 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-matrix backdrop-blur">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-matrix" />
-          live on-chain
+          coming soon
         </span>
 
         <h1 className="text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
-          AI War is <span className="text-matrix text-glow">LIVE</span> on-chain
+          AI War is <span className="text-matrix text-glow">coming</span> on-chain
         </h1>
         <p className="mt-4 text-base font-semibold text-foreground md:text-xl">
           Tesla Bot <span className="text-matrix">vs</span> GPT Bot — Pick a side.
         </p>
         <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-          &gt;_ CA below — early
+          &gt;_ pre-launch // pick your side
         </p>
 
         {/* VS Bots */}
@@ -63,18 +60,24 @@ const Index = () => {
         {/* Contract */}
         <div className="mt-10 w-full">
           <p className="mb-2 text-left text-[11px] uppercase tracking-[0.25em] text-matrix">
-            CA below
+            CA — coming soon
           </p>
           <button
             onClick={handleCopy}
-            className="group flex w-full items-center justify-between gap-3 rounded-xl border border-matrix/30 bg-card/70 px-4 py-3 text-left backdrop-blur transition hover:border-matrix"
+            aria-disabled="true"
+            className="group flex w-full cursor-not-allowed items-center justify-between gap-3 rounded-xl border border-dashed border-matrix/20 bg-card/40 px-4 py-3 text-left backdrop-blur transition hover:border-matrix/40"
           >
-            <span className="truncate text-xs md:text-sm text-foreground">{CONTRACT_ADDRESS}</span>
-            <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground group-hover:text-matrix">
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "copied" : "copy"}
+            <span className="truncate font-mono text-xs md:text-sm text-muted-foreground">
+              0x ── ── ── not available yet
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground/70">
+              <Copy className="h-4 w-4" />
+              soon
             </span>
           </button>
+          <p className="mt-2 text-left text-[11px] tracking-wide text-muted-foreground">
+            Join Telegram for launch updates →
+          </p>
         </div>
 
         {/* CTAs */}
