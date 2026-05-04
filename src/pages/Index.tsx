@@ -1,7 +1,7 @@
 import { Send, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TELEGRAM_URL = "#";
+const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 
 const Index = () => {
 
