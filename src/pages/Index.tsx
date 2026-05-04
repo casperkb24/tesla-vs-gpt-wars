@@ -1,18 +1,9 @@
-import { useState } from "react";
-import { Copy, Check, Send, ShoppingCart, Terminal } from "lucide-react";
+import { Send, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
-const BUY_URL = "#";
 const TELEGRAM_URL = "#";
 
 const Index = () => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    toast({ title: "Not available yet", description: "Contract launches soon. Join Telegram for updates." });
-  };
 
   return (
     <main className="relative min-h-screen overflow-hidden">
