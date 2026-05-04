@@ -1,18 +1,9 @@
-import { useState } from "react";
-import { Copy, Check, Send, ShoppingCart, Terminal } from "lucide-react";
+import { Send, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
-const BUY_URL = "#";
 const TELEGRAM_URL = "#";
 
 const Index = () => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    toast({ title: "Not available yet", description: "Contract launches soon. Join Telegram for updates." });
-  };
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -58,55 +49,31 @@ const Index = () => {
         </div>
 
         {/* Contract */}
-        <div className="mt-10 w-full">
-          <p className="mb-2 text-left text-[11px] uppercase tracking-[0.25em] text-matrix">
+        <div className="mt-12 w-full rounded-xl border border-dashed border-matrix/30 bg-card/40 px-4 py-5 text-center backdrop-blur">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-matrix">
             CA — coming soon
-          </p>
-          <button
-            onClick={handleCopy}
-            aria-disabled="true"
-            className="group flex w-full cursor-not-allowed items-center justify-between gap-3 rounded-xl border border-dashed border-matrix/20 bg-card/40 px-4 py-3 text-left backdrop-blur transition hover:border-matrix/40"
-          >
-            <span className="truncate font-mono text-xs md:text-sm text-muted-foreground">
-              0x ── ── ── not available yet
-            </span>
-            <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground/70">
-              <Copy className="h-4 w-4" />
-              soon
-            </span>
-          </button>
-          <p className="mt-2 text-left text-[11px] tracking-wide text-muted-foreground">
-            Join Telegram for launch updates →
           </p>
         </div>
 
-        {/* CTAs */}
-        <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
+        {/* Primary CTA */}
+        <div className="mt-16 flex w-full flex-col items-center gap-4">
+          <p className="text-sm font-medium text-foreground/90 md:text-base">
+            Join early. Don't miss launch.
+          </p>
           <Button
             asChild
             size="lg"
-            className="h-12 flex-1 font-bold text-background hover:opacity-90"
+            className="h-14 w-full max-w-xs px-8 text-base font-bold text-background hover:opacity-90"
             style={{ backgroundColor: "hsl(var(--matrix))" }}
           >
-            <a href={BUY_URL} target="_blank" rel="noreferrer">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Buy Now
-            </a>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="h-12 flex-1 border-matrix/50 bg-card/60 text-matrix backdrop-blur hover:bg-matrix/10 hover:text-matrix font-bold"
-          >
             <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
-              <Send className="mr-2 h-4 w-4" />
+              <Send className="mr-2 h-5 w-5" />
               Join Telegram
             </a>
           </Button>
         </div>
 
-        <p className="mt-10 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="mt-16 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
           $VSAI is a meme. nothing here is financial advice.
         </p>
       </section>
