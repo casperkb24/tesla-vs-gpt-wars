@@ -46,7 +46,7 @@ const Index = () => {
           AI War is <span className="text-matrix text-glow">coming</span> on-chain
         </h1>
         <p className="mt-4 text-base font-semibold text-foreground md:text-xl">
-          Tesla Bot <span className="text-matrix">vs</span> GPT Bot — Pick a side.
+          Tesla Bot <span className="text-matrix">vs</span> GPT Bot — Pick a side
         </p>
         <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
           &gt;_ pre-launch // pick your side
@@ -68,7 +68,7 @@ const Index = () => {
         {/* Primary CTA */}
         <div className="mt-16 flex w-full flex-col items-center gap-4">
           <p className="text-sm font-medium text-foreground/90 md:text-base">
-            Join early. Don't miss launch.
+            Join early — don't miss launch
           </p>
           <Button
             asChild
@@ -84,9 +84,9 @@ const Index = () => {
         </div>
 
         <p className="mt-16 text-xs tracking-wide text-muted-foreground">
-          <span className="text-matrix">$VSAI is real.</span>
+          <span className="text-matrix">$VSAI is real</span>
           <br />
-          Fake CA's are not.
+          Fake CA's are not
         </p>
       </section>
     </main>
