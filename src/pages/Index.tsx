@@ -15,14 +15,24 @@ const Index = () => {
           <Terminal className="h-5 w-5 text-matrix" />
           <span className="text-matrix text-glow">$VSAI</span>
         </div>
-        <a
-          href={TELEGRAM_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs md:text-sm text-muted-foreground hover:text-matrix transition"
-        >
-          telegram ↗
-        </a>
+        <div className="flex flex-col items-end gap-1 text-[10px] md:text-xs uppercase tracking-[0.2em]">
+          <a
+            href="#"
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted-foreground hover:text-matrix transition"
+          >
+            Official Website ↗
+          </a>
+          <a
+            href="#"
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted-foreground hover:text-matrix transition"
+          >
+            Official X ↗
+          </a>
+        </div>
       </header>
 
       {/* Hero */}
@@ -73,8 +83,10 @@ const Index = () => {
           </Button>
         </div>
 
-        <p className="mt-16 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          $VSAI is a meme. nothing here is financial advice.
+        <p className="mt-16 text-xs tracking-wide text-muted-foreground">
+          <span className="text-matrix">$VSAI is real.</span>
+          <br />
+          Fake CA's are not.
         </p>
       </section>
     </main>
