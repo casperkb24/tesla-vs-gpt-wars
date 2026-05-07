@@ -25,7 +25,7 @@ const Index = () => {
             Official Website ↗
           </a>
           <a
-            href="#"
+            href="https://x.com/casperkobe24?s=21"
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-matrix transition"
