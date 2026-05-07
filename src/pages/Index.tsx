@@ -45,10 +45,10 @@ const Index = () => {
         <h1 className="text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
           AI War is <span className="text-matrix text-glow">coming</span> on-chain
         </h1>
-        <p className="mt-4 text-base font-semibold text-foreground md:text-xl">
-          Tesla Bot <span className="text-matrix">vs</span> GPT Bot — Pick a side
+        <p className="mt-2 text-base font-semibold text-foreground md:text-xl">
+          Tesla Bot <span className="text-matrix">vs</span> GPT Bot
         </p>
-        <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+        <p className="mt-6 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
           &gt;_ pre-launch // pick your side
         </p>
 
