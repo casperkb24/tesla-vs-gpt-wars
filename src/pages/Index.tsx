@@ -17,7 +17,7 @@ const Index = () => {
         </div>
         <div className="flex flex-col items-end gap-1 text-[10px] md:text-xs uppercase tracking-[0.2em]">
           <a
-            href="#"
+            href="https://tesla-vs-gpt-wars.lovable.app"
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-matrix transition"
