@@ -536,4 +536,224 @@ const ScanlineOverlay = () => (
   />
 );
 
+/* ---------- Daily Battle ---------- */
+
+const BattleCountdown = () => {
+  const [label, setLabel] = useState("--:--:--");
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const end = new Date(now);
+      end.setUTCHours(24, 0, 0, 0);
+      const d = end.getTime() - now.getTime();
+      const h = Math.floor(d / 3.6e6);
+      const m = Math.floor((d % 3.6e6) / 6e4);
+      const s = Math.floor((d % 6e4) / 1000);
+      setLabel(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <span className="font-mono text-matrix">{label}</span>;
+};
+
+const BattleSide = ({
+  side,
+  name,
+  momentum,
+  state,
+}: {
+  side: "tesla" | "gpt";
+  name: string;
+  momentum: number;
+  state: string;
+}) => {
+  const isTesla = side === "tesla";
+  return (
+    <div
+      className={`relative overflow-hidden rounded-xl border p-4 md:p-5 ${
+        isTesla ? "border-tesla/40 bg-tesla/5" : "border-gpt/40 bg-gpt/5"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span className={`text-[10px] uppercase tracking-[0.25em] ${isTesla ? "text-tesla" : "text-gpt"}`}>
+          {name}
+        </span>
+        <span className="font-mono text-xs text-muted-foreground">{momentum}%</span>
+      </div>
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+        <div
+          className={`h-full ${isTesla ? "bg-tesla" : "bg-gpt"}`}
+          style={{ width: `${momentum}%`, boxShadow: `0 0 10px hsl(var(--${side}))` }}
+        />
+      </div>
+      <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">status // {state}</p>
+    </div>
+  );
+};
+
+/* ---------- Special Operations ---------- */
+
+const specialOps = [
+  {
+    icon: Crosshair,
+    name: "Hacked Artillery Network",
+    code: "OP-A7",
+    objective: "Seize fire control of contested grid",
+    progress: 64,
+    threshold: 80,
+  },
+  {
+    icon: Radio,
+    name: "Quantum Signal Capture",
+    code: "OP-Q3",
+    objective: "Intercept encrypted faction transmissions",
+    progress: 31,
+    threshold: 75,
+  },
+  {
+    icon: Satellite,
+    name: "Orbital Relay Breach",
+    code: "OP-R9",
+    objective: "Override relay routing protocols",
+    progress: 82,
+    threshold: 90,
+  },
+  {
+    icon: Shield,
+    name: "Reactor Security Override",
+    code: "OP-S1",
+    objective: "Bypass perimeter defense systems",
+    progress: 47,
+    threshold: 70,
+  },
+];
+
+const SpecialOpCard = ({
+  icon: Icon,
+  name,
+  code,
+  objective,
+  progress,
+  threshold,
+}: {
+  icon: typeof Crosshair;
+  name: string;
+  code: string;
+  objective: string;
+  progress: number;
+  threshold: number;
+}) => (
+  <div className="group relative overflow-hidden rounded-xl border border-matrix/20 bg-card/40 p-5 backdrop-blur transition hover:border-matrix/50">
+    <div className="flex items-start justify-between">
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5 text-matrix" />
+        <div>
+          <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code} // active</p>
+          <h3 className="mt-0.5 text-base font-bold md:text-lg">{name}</h3>
+        </div>
+      </div>
+      <Trophy className="h-4 w-4 text-matrix/50" />
+    </div>
+    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{objective}</p>
+    <div className="mt-4">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.25em]">
+        <span className="text-muted-foreground">mission progress</span>
+        <span className="font-mono text-matrix">
+          {progress}% / {threshold}%
+        </span>
+      </div>
+      <div className="relative mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+        <div
+          className="h-full bg-matrix"
+          style={{ width: `${progress}%`, boxShadow: "0 0 10px hsl(var(--matrix))" }}
+        />
+        <div
+          className="absolute top-0 h-full w-px bg-destructive/80"
+          style={{ left: `${threshold}%` }}
+        />
+      </div>
+      <p className="mt-2 text-[9px] uppercase tracking-[0.3em] text-muted-foreground">
+        victory threshold // {threshold}%
+      </p>
+    </div>
+  </div>
+);
+
+/* ---------- Expansion Monitor ---------- */
+
+const expansion = [
+  { icon: TrendingUp, label: "Holder Goal", current: "1,847", target: "5,000", progress: 37 },
+  { icon: Activity, label: "Volume Milestone", current: "$182K", target: "$500K", progress: 36 },
+  { icon: Target, label: "Community Expansion", current: "2,310", target: "10,000", progress: 23 },
+];
+
+const ExpansionRow = ({
+  icon: Icon,
+  label,
+  current,
+  target,
+  progress,
+}: {
+  icon: typeof TrendingUp;
+  label: string;
+  current: string;
+  target: string;
+  progress: number;
+}) => (
+  <div className="rounded-xl border border-matrix/20 bg-card/40 p-4 backdrop-blur md:p-5">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Icon className="h-4 w-4 text-matrix" />
+        <span className="text-xs uppercase tracking-[0.25em] text-foreground/90">{label}</span>
+      </div>
+      <span className="font-mono text-xs text-muted-foreground">
+        <span className="text-matrix">{current}</span> / {target}
+      </span>
+    </div>
+    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+      <div
+        className="h-full bg-gradient-to-r from-matrix to-matrix/70"
+        style={{ width: `${progress}%`, boxShadow: "0 0 10px hsl(var(--matrix))" }}
+      />
+    </div>
+  </div>
+);
+
+const milestones = [
+  { title: "Facility Overrun", status: "achieved", note: "Sector 3 secured" },
+  { title: "Network Expansion Complete", status: "achieved", note: "Relay 4 online" },
+  { title: "Supply Eliminated", status: "pending", note: "Awaiting threshold" },
+];
+
+const MilestoneCard = ({
+  title,
+  status,
+  note,
+}: {
+  title: string;
+  status: string;
+  note: string;
+}) => {
+  const achieved = status === "achieved";
+  return (
+    <div
+      className={`rounded-lg border p-4 backdrop-blur ${
+        achieved ? "border-matrix/50 bg-matrix/5" : "border-matrix/15 bg-card/30"
+      }`}
+    >
+      <p
+        className={`text-[9px] uppercase tracking-[0.3em] ${
+          achieved ? "text-matrix" : "text-muted-foreground"
+        }`}
+      >
+        {achieved ? "✓ achieved" : "// pending"}
+      </p>
+      <h4 className="mt-2 text-sm font-bold">{title}</h4>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">{note}</p>
+    </div>
+  );
+};
+
 export default Index;
