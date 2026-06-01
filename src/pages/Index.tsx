@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Send,
   Terminal,
   Radio,
   Shield,
-  Satellite,
   Swords,
   Clock,
   Lock,
@@ -20,6 +19,9 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import txSecurity from "@/assets/tx-security.mp4.asset.json";
+import txBreach from "@/assets/tx-breach.mov.asset.json";
+import txIncoming from "@/assets/tx-incoming.mp4.asset.json";
 
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
