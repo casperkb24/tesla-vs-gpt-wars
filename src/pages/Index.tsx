@@ -143,6 +143,29 @@ const Index = () => {
         </div>
       </Section>
 
+      {/* SPECIAL OPERATIONS */}
+      <Section eyebrow="// rotating" title="Special Operations" subtitle="Strategic missions — rotating regularly">
+        <div className="grid gap-4 md:grid-cols-2">
+          {specialOps.map((op) => (
+            <SpecialOpCard key={op.name} {...op} />
+          ))}
+        </div>
+      </Section>
+
+      {/* EXPANSION MONITOR */}
+      <Section eyebrow="// live" title="$VSAI Expansion Monitor" subtitle="Influence spreading across the battlefield">
+        <div className="space-y-4">
+          {expansion.map((m) => (
+            <ExpansionRow key={m.label} {...m} />
+          ))}
+          <div className="grid gap-3 md:grid-cols-3 pt-2">
+            {milestones.map((m) => (
+              <MilestoneCard key={m.title} {...m} />
+            ))}
+          </div>
+        </div>
+      </Section>
+
       {/* CLASSIFIED SYSTEMS */}
       <Section eyebrow="// 04" title="Classified Systems" subtitle="Access restricted">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
