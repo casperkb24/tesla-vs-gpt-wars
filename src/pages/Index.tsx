@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  Send,
   Terminal,
   Radio,
   Shield,
-  Satellite,
   Swords,
   Clock,
   Lock,
@@ -20,6 +18,9 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import txSecurity from "@/assets/tx-security.mp4.asset.json";
+import txBreach from "@/assets/tx-breach.mov.asset.json";
+import txIncoming from "@/assets/tx-incoming.mp4.asset.json";
 
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
@@ -134,13 +135,15 @@ const Index = () => {
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             <Button
               asChild
-              className="h-12 border border-tesla/50 bg-tesla/10 text-tesla hover:bg-tesla/20 font-bold uppercase tracking-[0.2em]"
+              className="h-12 bg-tesla text-background hover:bg-tesla/90 font-bold uppercase tracking-[0.2em] border-0"
+              style={{ boxShadow: "0 0 24px hsl(var(--tesla) / 0.55)" }}
             >
               <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick Tesla Bot</a>
             </Button>
             <Button
               asChild
-              className="h-12 border border-gpt/50 bg-gpt/10 text-gpt hover:bg-gpt/20 font-bold uppercase tracking-[0.2em]"
+              className="h-12 bg-gpt text-background hover:bg-gpt/90 font-bold uppercase tracking-[0.2em] border-0"
+              style={{ boxShadow: "0 0 24px hsl(var(--gpt) / 0.55)" }}
             >
               <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick GPT Bot</a>
             </Button>
@@ -233,21 +236,35 @@ const Index = () => {
               <span className="text-gpt">GPT Bot</span>
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-3">
+            <div className="mt-8 flex flex-col items-center gap-4">
               <Button
                 asChild
                 size="lg"
                 className="h-14 px-10 text-base font-bold text-background hover:opacity-90"
-                style={{ backgroundColor: "hsl(var(--matrix))" }}
+                style={{ backgroundColor: "hsl(var(--matrix))", boxShadow: "0 0 30px hsl(var(--matrix) / 0.55)" }}
               >
                 <a href={BUY_URL} target="_blank" rel="noreferrer">
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Buy $VSAI
                 </a>
               </Button>
-              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" className="text-[11px] uppercase tracking-[0.3em] text-matrix hover:opacity-80">
-                <Send className="mr-1 inline h-3 w-3" /> Join Telegram
-              </a>
+
+              <div className="grid w-full max-w-md grid-cols-2 gap-3">
+                <Button
+                  asChild
+                  className="h-12 bg-tesla text-background hover:bg-tesla/90 font-bold uppercase tracking-[0.2em] border-0"
+                  style={{ boxShadow: "0 0 24px hsl(var(--tesla) / 0.55)" }}
+                >
+                  <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick Tesla Bot</a>
+                </Button>
+                <Button
+                  asChild
+                  className="h-12 bg-gpt text-background hover:bg-gpt/90 font-bold uppercase tracking-[0.2em] border-0"
+                  style={{ boxShadow: "0 0 24px hsl(var(--gpt) / 0.55)" }}
+                >
+                  <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick GPT Bot</a>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -449,9 +466,9 @@ const MilestoneRow = ({
 /* ---------- Transmissions ---------- */
 
 const transmissions = [
-  { icon: Video, code: "TX-019", title: "Recovered Security Footage", status: "decrypting" },
-  { icon: Shield, code: "TX-020", title: "Facility Breach Confirmed", status: "released" },
-  { icon: Radio, code: "TX-021", title: "Transmission Incoming", status: "pending" },
+  { icon: Video, code: "TX-019", title: "Recovered Security Footage", status: "decrypted", src: txSecurity.url },
+  { icon: Shield, code: "TX-020", title: "Facility Breach Confirmed", status: "released", src: txBreach.url },
+  { icon: Radio, code: "TX-021", title: "Transmission Incoming", status: "incoming", src: txIncoming.url },
 ];
 
 const TransmissionCard = ({
@@ -459,37 +476,63 @@ const TransmissionCard = ({
   code,
   title,
   status,
+  src,
 }: {
   icon: typeof Video;
   code: string;
   title: string;
   status: string;
-}) => (
-  <a
-    href={X_URL}
-    target="_blank"
-    rel="noreferrer"
-    className="group relative block overflow-hidden rounded-xl border border-matrix/20 bg-black/60 backdrop-blur transition hover:border-matrix/60"
-  >
-    <div className="relative aspect-video w-full overflow-hidden">
-      <div className="absolute inset-0 grid-bg opacity-30" />
-      <div className="absolute inset-0 bg-gradient-to-br from-matrix/10 via-transparent to-black/60" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <PlayCircle className="h-10 w-10 text-matrix opacity-80 group-hover:scale-110 transition" />
+  src: string;
+}) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const handlePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.play();
+    setPlaying(true);
+  };
+
+  return (
+    <div className="group relative block overflow-hidden rounded-xl border border-matrix/20 bg-black/60 backdrop-blur transition hover:border-matrix/60">
+      <div className="relative aspect-video w-full overflow-hidden bg-black">
+        <video
+          ref={videoRef}
+          src={src}
+          preload="metadata"
+          playsInline
+          controls={playing}
+          onEnded={() => setPlaying(false)}
+          onPause={() => setPlaying(false)}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {!playing && (
+          <button
+            type="button"
+            onClick={handlePlay}
+            aria-label={`Play ${title}`}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-matrix/10 via-transparent to-black/60" />
+            <div className="absolute inset-0 grid-bg opacity-20" />
+            <PlayCircle className="relative h-12 w-12 text-matrix opacity-90 transition group-hover:scale-110" style={{ filter: "drop-shadow(0 0 12px hsl(var(--matrix)))" }} />
+            <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full border border-matrix/30 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] text-matrix">
+              <span className="h-1 w-1 animate-pulse rounded-full bg-matrix" />
+              {status}
+            </div>
+          </button>
+        )}
       </div>
-      <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full border border-matrix/30 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] text-matrix">
-        <span className="h-1 w-1 animate-pulse rounded-full bg-matrix" />
-        {status}
+      <div className="flex items-center gap-2 p-3">
+        <Icon className="h-3.5 w-3.5 text-matrix shrink-0" />
+        <div className="min-w-0">
+          <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code}</p>
+          <p className="truncate text-xs font-bold">{title}</p>
+        </div>
       </div>
     </div>
-    <div className="flex items-center gap-2 p-3">
-      <Icon className="h-3.5 w-3.5 text-matrix shrink-0" />
-      <div className="min-w-0">
-        <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code}</p>
-        <p className="truncate text-xs font-bold">{title}</p>
-      </div>
-    </div>
-  </a>
-);
+  );
+};
 
 export default Index;
