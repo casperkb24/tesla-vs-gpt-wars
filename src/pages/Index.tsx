@@ -6,24 +6,29 @@ import {
   Shield,
   Satellite,
   Swords,
-  Crosshair,
   Clock,
-  Trophy,
-  Users,
+  Lock,
   Flame,
   Coins,
   TrendingUp,
   Activity,
+  Users,
+  ShoppingCart,
+  RotateCw,
+  Gift,
+  Video,
+  PlayCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const SITE_URL = "https://tesla-vs-gpt-wars.lovable.app";
+const BUY_URL = TELEGRAM_URL; // placeholder until CA drops
 
 /* ---------- Live mock numbers ---------- */
-const TESLA_SUPPLY_PCT = 47.3;
-const GPT_SUPPLY_PCT = 52.7;
+const TESLA_POWER_PCT = 47.3;
+const GPT_POWER_PCT = 52.7;
 const TESLA_SUPPLY = 42_730_000;
 const GPT_SUPPLY = 47_620_000;
 const SOL_VALUE = 184.6;
@@ -48,13 +53,21 @@ const Index = () => {
           </span>
           <span>resolves in <BattleCountdown /></span>
         </div>
-        <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.25em] text-matrix hover:opacity-80">
-          Join ↗
-        </a>
+        <Button
+          asChild
+          size="sm"
+          className="h-9 px-4 font-bold uppercase tracking-[0.2em] text-background hover:opacity-90"
+          style={{ backgroundColor: "hsl(var(--matrix))" }}
+        >
+          <a href={BUY_URL} target="_blank" rel="noreferrer">
+            <ShoppingCart className="mr-1.5 h-4 w-4" />
+            Buy $VSAI
+          </a>
+        </Button>
       </header>
 
       {/* Hero — minimal */}
-      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-4 pb-6 text-center md:pt-10">
+      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-4 pb-6 text-center md:pt-8">
         <h1 className="text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
           AI War is <span className="text-matrix text-glow">live</span> on-chain
         </h1>
@@ -63,8 +76,8 @@ const Index = () => {
         </p>
       </section>
 
-      {/* ====== MAIN — BATTLE MONITOR ====== */}
-      <section className="relative z-10 mx-auto max-w-6xl px-5 pb-10">
+      {/* ====== MAIN — BATTLE POWER ====== */}
+      <section className="relative z-10 mx-auto max-w-6xl px-5 pb-6">
         <div className="relative overflow-hidden rounded-2xl border border-matrix/40 bg-black/70 p-5 md:p-8 backdrop-blur">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-matrix to-transparent" />
 
@@ -80,12 +93,12 @@ const Index = () => {
             </span>
           </div>
 
-          {/* Side headers + the ONE big horizontal Battle Power bar */}
+          {/* Side headers */}
           <div className="mb-3 flex items-end justify-between gap-4">
             <div className="text-left">
               <p className="text-[10px] uppercase tracking-[0.3em] text-tesla">//OPTIMUS</p>
               <h3 className="mt-1 text-xl font-black md:text-3xl text-tesla">Tesla Bot</h3>
-              <p className="mt-1 font-mono text-2xl md:text-4xl font-bold text-tesla">{TESLA_SUPPLY_PCT}%</p>
+              <p className="mt-1 font-mono text-2xl md:text-4xl font-bold text-tesla">{TESLA_POWER_PCT}%</p>
             </div>
             <div className="hidden md:flex flex-col items-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
               <span>battle power</span>
@@ -94,41 +107,42 @@ const Index = () => {
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gpt">//OMNI</p>
               <h3 className="mt-1 text-xl font-black md:text-3xl text-gpt">GPT Bot</h3>
-              <p className="mt-1 font-mono text-2xl md:text-4xl font-bold text-gpt">{GPT_SUPPLY_PCT}%</p>
+              <p className="mt-1 font-mono text-2xl md:text-4xl font-bold text-gpt">{GPT_POWER_PCT}%</p>
             </div>
           </div>
 
-          <div className="relative h-8 md:h-10 w-full overflow-hidden rounded-full border border-matrix/20 bg-white/5">
+          {/* One big horizontal Battle Power bar */}
+          <div className="relative h-10 md:h-12 w-full overflow-hidden rounded-full border border-matrix/20 bg-white/5">
             <div
               className="absolute inset-y-0 left-0 bg-tesla"
-              style={{ width: `${TESLA_SUPPLY_PCT}%`, boxShadow: "0 0 18px hsl(var(--tesla))" }}
+              style={{ width: `${TESLA_POWER_PCT}%`, boxShadow: "0 0 20px hsl(var(--tesla))" }}
             />
             <div
               className="absolute inset-y-0 right-0 bg-gpt"
-              style={{ width: `${GPT_SUPPLY_PCT}%`, boxShadow: "0 0 18px hsl(var(--gpt))" }}
+              style={{ width: `${GPT_POWER_PCT}%`, boxShadow: "0 0 20px hsl(var(--gpt))" }}
             />
             <div className="absolute inset-y-0 left-1/2 w-px bg-background/60" />
           </div>
 
           <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            <span>{(TESLA_SUPPLY / 1_000_000).toFixed(2)}M $VSAI</span>
-            <span className="text-matrix">leader · {GPT_SUPPLY_PCT > TESLA_SUPPLY_PCT ? "GPT" : "TESLA"}</span>
-            <span>{(GPT_SUPPLY / 1_000_000).toFixed(2)}M $VSAI</span>
+            <span>{(TESLA_SUPPLY / 1_000_000).toFixed(2)}M $VSAI committed</span>
+            <span className="text-matrix">leader · {GPT_POWER_PCT > TESLA_POWER_PCT ? "GPT" : "TESLA"}</span>
+            <span>{(GPT_SUPPLY / 1_000_000).toFixed(2)}M $VSAI committed</span>
           </div>
 
-          {/* CTAs */}
+          {/* Pick CTAs */}
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             <Button
               asChild
               className="h-12 border border-tesla/50 bg-tesla/10 text-tesla hover:bg-tesla/20 font-bold uppercase tracking-[0.2em]"
             >
-              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Back Tesla Bot</a>
+              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick Tesla Bot</a>
             </Button>
             <Button
               asChild
               className="h-12 border border-gpt/50 bg-gpt/10 text-gpt hover:bg-gpt/20 font-bold uppercase tracking-[0.2em]"
             >
-              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Back GPT Bot</a>
+              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick GPT Bot</a>
             </Button>
           </div>
 
@@ -141,21 +155,47 @@ const Index = () => {
           </div>
 
           <p className="mt-5 border-t border-matrix/15 pt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-            pick your side = hold $VSAI for your chosen bot
+            pick your side = lock $VSAI behind your chosen bot
           </p>
         </div>
       </section>
 
-      {/* ====== SPECIAL OPERATIONS — 3 horizontal cards ====== */}
-      <Section eyebrow="// bonus rewards" title="Special Operations">
+      {/* ====== PARTICIPATION REWARDS — directly below Battle Power ====== */}
+      <section className="relative z-10 mx-auto max-w-6xl px-5 pb-10">
+        <div className="relative overflow-hidden rounded-2xl border border-matrix/30 bg-card/40 p-5 md:p-7 backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-matrix">
+              <Lock className="h-4 w-4" />
+              <p className="text-[10px] uppercase tracking-[0.35em]">// your supply is never spent</p>
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+              lock until battle resolution <span className="text-matrix">(up to 24h)</span>
+            </span>
+          </div>
+
+          <h2 className="mt-2 text-xl font-black tracking-tight md:text-2xl">
+            Lock $VSAI · Earn Bonus · Get It All Back
+          </h2>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-4">
+            <RewardStep icon={Lock} title="Lock $VSAI" body="Until battle resolution (up to 24h)." />
+            <RewardStep icon={Swords} title="Back Your Side" body="Your supply boosts Battle Power." />
+            <RewardStep icon={RotateCw} title="Supply Returns" body="Automatically released on resolution." />
+            <RewardStep icon={Gift} title="Earn Bonus $VSAI" body="Paid out to participants every battle." />
+          </div>
+        </div>
+      </section>
+
+      {/* ====== WEEKLY VAULT SURVEILLANCE ====== */}
+      <Section eyebrow="// reserve activity" title="Weekly Vault Surveillance">
         <div className="grid gap-3 md:grid-cols-3">
-          {specialOps.map((op) => (
-            <SpecialOpCard key={op.name} {...op} />
+          {vaultEvents.map((op) => (
+            <VaultEventCard key={op.name} {...op} />
           ))}
         </div>
       </Section>
 
-      {/* ====== COMMUNITY MILESTONES — compact rows ====== */}
+      {/* ====== COMMUNITY MILESTONES ====== */}
       <Section eyebrow="// community goals" title="Milestones">
         <div className="grid gap-2 md:grid-cols-2">
           {milestones.map((m) => (
@@ -164,22 +204,16 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ====== BATTLE LOCATIONS — compact flavor strip ====== */}
-      <Section eyebrow="// recon" title="Anticipated Battle Locations">
-        <div className="grid gap-2 sm:grid-cols-3">
-          {locations.map((l) => (
-            <div
-              key={l.title}
-              className="flex items-center gap-3 rounded-lg border border-matrix/15 bg-card/30 px-3 py-2.5 backdrop-blur"
-            >
-              <l.icon className="h-4 w-4 text-matrix shrink-0" />
-              <div className="min-w-0">
-                <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{l.code}</p>
-                <p className="truncate text-xs font-bold">{l.title}</p>
-              </div>
-            </div>
+      {/* ====== TRANSMISSION ARCHIVE ====== */}
+      <Section eyebrow="// transmission archive" title="Recovered Footage">
+        <div className="grid gap-3 md:grid-cols-3">
+          {transmissions.map((t) => (
+            <TransmissionCard key={t.title} {...t} />
           ))}
         </div>
+        <p className="mt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+          follow <a href={X_URL} target="_blank" rel="noreferrer" className="text-matrix hover:opacity-80">X ↗</a> for intelligence updates, battle reports, and transmission releases
+        </p>
       </Section>
 
       {/* ====== FINAL CTA ====== */}
@@ -206,12 +240,14 @@ const Index = () => {
                 className="h-14 px-10 text-base font-bold text-background hover:opacity-90"
                 style={{ backgroundColor: "hsl(var(--matrix))" }}
               >
-                <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
-                  <Send className="mr-2 h-5 w-5" />
-                  Join Telegram
+                <a href={BUY_URL} target="_blank" rel="noreferrer">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Buy $VSAI
                 </a>
               </Button>
-              <span className="text-[11px] uppercase tracking-[0.3em] text-matrix">$VSAI</span>
+              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" className="text-[11px] uppercase tracking-[0.3em] text-matrix hover:opacity-80">
+                <Send className="mr-1 inline h-3 w-3" /> Join Telegram
+              </a>
             </div>
           </div>
         </div>
@@ -264,6 +300,22 @@ const Stat = ({ label, value, highlight }: { label: string; value: string; highl
   </div>
 );
 
+const RewardStep = ({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: typeof Lock;
+  title: string;
+  body: string;
+}) => (
+  <div className="rounded-xl border border-matrix/15 bg-black/40 p-3.5">
+    <Icon className="h-4 w-4 text-matrix" />
+    <p className="mt-2 text-xs font-bold uppercase tracking-[0.15em]">{title}</p>
+    <p className="mt-1 text-[11px] text-muted-foreground">{body}</p>
+  </div>
+);
+
 const ScanlineOverlay = () => (
   <div
     className="pointer-events-none absolute inset-0 z-[1] opacity-[0.06]"
@@ -296,51 +348,46 @@ const BattleCountdown = () => {
   return <span className="font-mono text-matrix">{label}</span>;
 };
 
-/* ---------- Special Operations ---------- */
+/* ---------- Weekly Vault Surveillance ---------- */
 
-const specialOps = [
+const vaultEvents = [
   {
-    icon: Crosshair,
-    name: "Artillery Network",
-    code: "OP-A7",
-    progress: 64,
-    threshold: 80,
-    bonus: "250K $VSAI",
+    icon: Flame,
+    name: "Reserve Burn Event",
+    code: "VLT-01",
+    detail: "120K $VSAI",
+    sub: "scheduled · this week",
   },
   {
-    icon: Satellite,
-    name: "Orbital Relay Breach",
-    code: "OP-R9",
-    progress: 38,
-    threshold: 75,
-    bonus: "400K $VSAI",
+    icon: ShoppingCart,
+    name: "Reserve Purchase Event",
+    code: "VLT-02",
+    detail: "◎ 8.5 SOL",
+    sub: "allocated · pending execution",
   },
   {
-    icon: Shield,
-    name: "Reactor Override",
-    code: "OP-S1",
-    progress: 52,
-    threshold: 70,
-    bonus: "180K $VSAI",
+    icon: Gift,
+    name: "Participant Reward Event",
+    code: "VLT-03",
+    detail: "75K $VSAI",
+    sub: "distributed · last 24h",
   },
 ];
 
-const SpecialOpCard = ({
+const VaultEventCard = ({
   icon: Icon,
   name,
   code,
-  progress,
-  threshold,
-  bonus,
+  detail,
+  sub,
 }: {
-  icon: typeof Crosshair;
+  icon: typeof Flame;
   name: string;
   code: string;
-  progress: number;
-  threshold: number;
-  bonus: string;
+  detail: string;
+  sub: string;
 }) => (
-  <div className="relative overflow-hidden rounded-xl border border-matrix/20 bg-card/40 p-4 backdrop-blur transition hover:border-matrix/50">
+  <div className="rounded-xl border border-matrix/20 bg-card/40 p-4 backdrop-blur transition hover:border-matrix/50">
     <div className="flex items-start justify-between gap-3">
       <div className="flex items-center gap-2.5">
         <Icon className="h-4 w-4 text-matrix" />
@@ -351,26 +398,14 @@ const SpecialOpCard = ({
       </div>
       <span className="flex items-center gap-1 text-matrix text-[10px] uppercase tracking-[0.2em]">
         <Coins className="h-3 w-3" />
-        <span className="font-mono">{bonus}</span>
+        <span className="font-mono">{detail}</span>
       </span>
     </div>
-
-    <div className="mt-3">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em]">
-        <span className="text-muted-foreground">progress</span>
-        <span className="font-mono text-foreground">{progress}% / {threshold}%</span>
-      </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-        <div
-          className="h-full bg-gradient-to-r from-matrix to-matrix/70"
-          style={{ width: `${(progress / threshold) * 100}%`, boxShadow: "0 0 10px hsl(var(--matrix))" }}
-        />
-      </div>
-    </div>
+    <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">{sub}</p>
   </div>
 );
 
-/* ---------- Milestones (combined community goals) ---------- */
+/* ---------- Milestones ---------- */
 
 const milestones = [
   { icon: Users, label: "Holders", current: "1,842", target: "5,000", progress: 37 },
@@ -411,12 +446,50 @@ const MilestoneRow = ({
   </div>
 );
 
-/* ---------- Locations (compact flavor) ---------- */
+/* ---------- Transmissions ---------- */
 
-const locations = [
-  { icon: Satellite, code: "LOC-01", title: "Mars Launch Facility" },
-  { icon: Shield, code: "LOC-02", title: "Quantum Vault" },
-  { icon: Radio, code: "LOC-03", title: "Orbital Relay" },
+const transmissions = [
+  { icon: Video, code: "TX-019", title: "Recovered Security Footage", status: "decrypting" },
+  { icon: Shield, code: "TX-020", title: "Facility Breach Confirmed", status: "released" },
+  { icon: Radio, code: "TX-021", title: "Transmission Incoming", status: "pending" },
 ];
+
+const TransmissionCard = ({
+  icon: Icon,
+  code,
+  title,
+  status,
+}: {
+  icon: typeof Video;
+  code: string;
+  title: string;
+  status: string;
+}) => (
+  <a
+    href={X_URL}
+    target="_blank"
+    rel="noreferrer"
+    className="group relative block overflow-hidden rounded-xl border border-matrix/20 bg-black/60 backdrop-blur transition hover:border-matrix/60"
+  >
+    <div className="relative aspect-video w-full overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-matrix/10 via-transparent to-black/60" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <PlayCircle className="h-10 w-10 text-matrix opacity-80 group-hover:scale-110 transition" />
+      </div>
+      <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full border border-matrix/30 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] text-matrix">
+        <span className="h-1 w-1 animate-pulse rounded-full bg-matrix" />
+        {status}
+      </div>
+    </div>
+    <div className="flex items-center gap-2 p-3">
+      <Icon className="h-3.5 w-3.5 text-matrix shrink-0" />
+      <div className="min-w-0">
+        <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code}</p>
+        <p className="truncate text-xs font-bold">{title}</p>
+      </div>
+    </div>
+  </a>
+);
 
 export default Index;
