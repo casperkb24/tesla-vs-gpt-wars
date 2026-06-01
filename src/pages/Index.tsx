@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Send,
+  Send: _Send,
   Terminal,
   Radio,
   Shield,
