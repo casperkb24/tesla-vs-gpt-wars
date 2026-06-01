@@ -237,21 +237,35 @@ const Index = () => {
               <span className="text-gpt">GPT Bot</span>
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-3">
+            <div className="mt-8 flex flex-col items-center gap-4">
               <Button
                 asChild
                 size="lg"
                 className="h-14 px-10 text-base font-bold text-background hover:opacity-90"
-                style={{ backgroundColor: "hsl(var(--matrix))" }}
+                style={{ backgroundColor: "hsl(var(--matrix))", boxShadow: "0 0 30px hsl(var(--matrix) / 0.55)" }}
               >
                 <a href={BUY_URL} target="_blank" rel="noreferrer">
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Buy $VSAI
                 </a>
               </Button>
-              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" className="text-[11px] uppercase tracking-[0.3em] text-matrix hover:opacity-80">
-                <Send className="mr-1 inline h-3 w-3" /> Join Telegram
-              </a>
+
+              <div className="grid w-full max-w-md grid-cols-2 gap-3">
+                <Button
+                  asChild
+                  className="h-12 bg-tesla text-background hover:bg-tesla/90 font-bold uppercase tracking-[0.2em] border-0"
+                  style={{ boxShadow: "0 0 24px hsl(var(--tesla) / 0.55)" }}
+                >
+                  <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick Tesla Bot</a>
+                </Button>
+                <Button
+                  asChild
+                  className="h-12 bg-gpt text-background hover:bg-gpt/90 font-bold uppercase tracking-[0.2em] border-0"
+                  style={{ boxShadow: "0 0 24px hsl(var(--gpt) / 0.55)" }}
+                >
+                  <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick GPT Bot</a>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
