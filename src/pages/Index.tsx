@@ -1,10 +1,36 @@
 import { useEffect, useState } from "react";
-import { Send, Terminal, Lock, Radio, Shield, Activity, Cpu, Satellite, Triangle, Play, Swords, Target, TrendingUp, Crosshair, Clock, Trophy } from "lucide-react";
+import {
+  Send,
+  Terminal,
+  Lock,
+  Radio,
+  Shield,
+  Activity,
+  Satellite,
+  Play,
+  Swords,
+  Target,
+  TrendingUp,
+  Crosshair,
+  Clock,
+  Trophy,
+  Users,
+  Flame,
+  Coins,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const SITE_URL = "https://tesla-vs-gpt-wars.lovable.app";
+
+/* ---------- Live mock numbers (placeholder data) ---------- */
+const TESLA_SUPPLY_PCT = 47.3;
+const GPT_SUPPLY_PCT = 52.7;
+const TESLA_SUPPLY = 42_730_000;
+const GPT_SUPPLY = 47_620_000;
+const SOL_VALUE = 184.6;
+const USD_VALUE = 31_420;
 
 const Index = () => {
   return (
@@ -28,56 +54,34 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-10 pb-12 text-center md:pt-20">
-        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-matrix/40 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-matrix backdrop-blur">
+      {/* Hero — compact */}
+      <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-6 pb-10 text-center md:pt-12">
+        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-matrix/40 bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-matrix backdrop-blur">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-matrix" />
-          intelligence portal // live
+          live battle monitor // online
         </span>
 
         <h1 className="text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
-          AI War is <span className="text-matrix text-glow">coming</span> on-chain
+          AI War is <span className="text-matrix text-glow">live</span> on-chain
         </h1>
-        <p className="mt-3 text-base text-muted-foreground md:text-lg leading-relaxed">
-          Two AI civilizations<br />One future<br />Pick your side
+        <p className="mt-3 text-sm text-muted-foreground md:text-base">
+          Hold <span className="text-matrix">$VSAI</span> — pick Tesla Bot or GPT Bot — every 24h one side wins
         </p>
-        <p className="mt-6 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-          &gt;_ pre-launch // pick your side
+        <p className="mt-4 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+          &gt;_ scroll for live battle totals
         </p>
-
-        {/* VS Bots */}
-        <div className="mt-10 grid w-full grid-cols-2 gap-3 md:gap-6">
-          <BotCard side="tesla" name="Tesla Bot" tag="//OPTIMUS" support={48} />
-          <BotCard side="gpt" name="GPT Bot" tag="//OMNI" support={52} />
-        </div>
-
-        {/* Contract */}
-        <div className="mt-12 w-full rounded-xl border border-dashed border-matrix/30 bg-card/40 px-4 py-5 text-center backdrop-blur">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-matrix">CA — coming soon</p>
-        </div>
-
-        {/* Primary CTA */}
-        <div className="mt-12 flex w-full flex-col items-center gap-4">
-          <p className="text-sm font-medium text-foreground/90 md:text-base">
-            Join early — don't miss launch
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="h-14 w-full max-w-xs px-8 text-base font-bold text-background hover:opacity-90"
-            style={{ backgroundColor: "hsl(var(--matrix))" }}
-          >
-            <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
-              <Send className="mr-2 h-5 w-5" />
-              Join Telegram
-            </a>
-          </Button>
-        </div>
       </section>
 
-      {/* DAILY BATTLE */}
-      <Section eyebrow="// 01 — today" title="Daily Battle" subtitle="A new conflict every 24h — one faction wins">
-        <div className="rounded-xl border border-matrix/30 bg-black/60 p-5 md:p-8 backdrop-blur">
+      {/* ====== 01 — MAIN BATTLE MONITOR ====== */}
+      <Section
+        eyebrow="// 01 — main event"
+        title="$VSAI Battle Monitor"
+        subtitle="Live supply backing each side — battle resolves daily"
+      >
+        <div className="relative overflow-hidden rounded-2xl border border-matrix/40 bg-black/70 p-5 md:p-8 backdrop-blur">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-matrix to-transparent" />
+
+          {/* status row */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-[10px] uppercase tracking-[0.25em]">
             <span className="flex items-center gap-2 text-matrix">
               <Swords className="h-3 w-3 animate-pulse" />
@@ -85,104 +89,136 @@ const Index = () => {
             </span>
             <span className="flex items-center gap-2 text-muted-foreground">
               <Clock className="h-3 w-3" />
-              next result in <BattleCountdown />
+              resolves in <BattleCountdown />
             </span>
           </div>
 
+          {/* odds-style split */}
           <div className="grid gap-4 md:grid-cols-2">
-            <BattleSide side="tesla" name="Tesla Bot" momentum={48} state="advancing" />
-            <BattleSide side="gpt" name="GPT Bot" momentum={52} state="holding line" />
+            <SideCard
+              side="tesla"
+              name="Tesla Bot"
+              tag="//OPTIMUS"
+              pct={TESLA_SUPPLY_PCT}
+              supply={TESLA_SUPPLY}
+              leading={TESLA_SUPPLY_PCT > GPT_SUPPLY_PCT}
+            />
+            <SideCard
+              side="gpt"
+              name="GPT Bot"
+              tag="//OMNI"
+              pct={GPT_SUPPLY_PCT}
+              supply={GPT_SUPPLY}
+              leading={GPT_SUPPLY_PCT > TESLA_SUPPLY_PCT}
+            />
           </div>
 
+          {/* combined bar */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+              <span className="text-tesla">{TESLA_SUPPLY_PCT}% tesla</span>
+              <span>percent control</span>
+              <span className="text-gpt">{GPT_SUPPLY_PCT}% gpt</span>
+            </div>
+            <div className="mt-2 flex h-2 w-full overflow-hidden rounded-full bg-white/5">
+              <div className="bg-tesla" style={{ width: `${TESLA_SUPPLY_PCT}%`, boxShadow: "0 0 10px hsl(var(--tesla))" }} />
+              <div className="bg-gpt" style={{ width: `${GPT_SUPPLY_PCT}%`, boxShadow: "0 0 10px hsl(var(--gpt))" }} />
+            </div>
+          </div>
+
+          {/* coin stats */}
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Stat label="Battle Condition" value="Sector 7" />
-            <Stat label="Intel Updates" value="03 today" />
-            <Stat label="Active Engagements" value="12" />
-            <Stat label="Last Winner" value="GPT" highlight />
+            <Stat label="Total $VSAI Committed" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(2)}M`} />
+            <Stat label="Estimated SOL" value={`◎ ${SOL_VALUE.toFixed(2)}`} />
+            <Stat label="Estimated USD" value={`$${USD_VALUE.toLocaleString()}`} />
+            <Stat
+              label="Current Leader"
+              value={GPT_SUPPLY_PCT > TESLA_SUPPLY_PCT ? "GPT" : "TESLA"}
+              highlight
+            />
           </div>
 
-          <p className="mt-6 border-t border-matrix/15 pt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-            war report drops at battle close // pick your side before then
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Stat label="Last Winner" value="GPT" />
+            <Stat label="Win Streak" value="2" />
+            <Stat label="Battles Resolved" value="46" />
+            <Stat label="Next Snapshot" value="00:00 UTC" />
+          </div>
+
+          {/* pick side CTAs */}
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            <Button
+              asChild
+              className="h-12 border border-tesla/50 bg-tesla/10 text-tesla hover:bg-tesla/20 font-bold uppercase tracking-[0.2em]"
+            >
+              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Back Tesla Bot</a>
+            </Button>
+            <Button
+              asChild
+              className="h-12 border border-gpt/50 bg-gpt/10 text-gpt hover:bg-gpt/20 font-bold uppercase tracking-[0.2em]"
+            >
+              <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Back GPT Bot</a>
+            </Button>
+          </div>
+
+          <p className="mt-5 border-t border-matrix/15 pt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            pick your side = hold $VSAI for your chosen bot
           </p>
         </div>
       </Section>
 
-      {/* INTELLIGENCE BRIEFING */}
-      <Section eyebrow="// 02" title="Intelligence Briefing" subtitle="Locations under active observation">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {briefings.map((b) => (
-            <IntelCard key={b.title} {...b} />
-          ))}
-        </div>
-      </Section>
-
-      {/* WAR ROOM PREVIEW */}
-      <Section eyebrow="// 03" title="War Room Preview" subtitle="Live telemetry — unverified">
-        <div className="rounded-xl border border-matrix/20 bg-card/40 p-5 md:p-8 backdrop-blur">
-          <div className="mb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-matrix" />
-              system: online
-            </span>
-            <span>sector // global</span>
-          </div>
-
-          <div className="space-y-5">
-            <InfluenceBar label="Tesla Influence" value={48} side="tesla" />
-            <InfluenceBar label="GPT Influence" value={52} side="gpt" />
-          </div>
-
-          <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-            <Stat label="Territories Monitored" value="147" />
-            <Stat label="Intel Reports Active" value="2,318" />
-            <Stat label="Conflict Readiness" value="DEFCON 3" highlight />
-            <Stat label="Encrypted Channels" value="42" />
-            <Stat label="Faction Operatives" value="∞" />
-            <Stat label="Signal Integrity" value="98.7%" />
-          </div>
-        </div>
-      </Section>
-
-      {/* SPECIAL OPERATIONS */}
-      <Section eyebrow="// rotating" title="Special Operations" subtitle="Strategic missions — rotating regularly">
-        <div className="grid gap-4 md:grid-cols-2">
+      {/* ====== 02 — SPECIAL OPERATIONS (compact, 3 cards) ====== */}
+      <Section
+        eyebrow="// 02 — bonus missions"
+        title="Special Operations"
+        subtitle="Reserve-funded bonus missions — separate from daily battle"
+      >
+        <div className="grid gap-4 md:grid-cols-3">
           {specialOps.map((op) => (
             <SpecialOpCard key={op.name} {...op} />
           ))}
         </div>
       </Section>
 
-      {/* EXPANSION MONITOR */}
-      <Section eyebrow="// live" title="$VSAI Expansion Monitor" subtitle="Influence spreading across the battlefield">
-        <div className="space-y-4">
+      {/* ====== 03 — EXPANSION MONITOR ====== */}
+      <Section
+        eyebrow="// 03 — community goals"
+        title="$VSAI Expansion Monitor"
+        subtitle="Hit the goals — unlock the outcomes"
+      >
+        <div className="grid gap-3 md:grid-cols-2">
           {expansion.map((m) => (
             <ExpansionRow key={m.label} {...m} />
           ))}
-          <div className="grid gap-3 md:grid-cols-3 pt-2">
-            {milestones.map((m) => (
-              <MilestoneCard key={m.title} {...m} />
-            ))}
-          </div>
         </div>
-      </Section>
-
-      {/* CLASSIFIED SYSTEMS */}
-      <Section eyebrow="// 04" title="Classified Systems" subtitle="Access restricted">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {classified.map((c) => (
-            <ClassifiedCard key={c} name={c} />
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          {milestones.map((m) => (
+            <MilestoneCard key={m.title} {...m} />
           ))}
         </div>
       </Section>
 
-      {/* INTELLIGENCE FEED */}
-      <Section eyebrow="// 05" title="Intelligence Feed" subtitle="Intercepted transmissions — last 72h">
+      {/* ====== 04 — ANTICIPATED BATTLE LOCATIONS (3 only) ====== */}
+      <Section
+        eyebrow="// 04 — recon"
+        title="Anticipated Battle Locations"
+        subtitle="Next sectors under active observation"
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          {briefings.map((b) => (
+            <IntelCard key={b.title} {...b} />
+          ))}
+        </div>
+      </Section>
+
+      {/* ====== 05 — INTELLIGENCE FEED ====== */}
+      <Section eyebrow="// 05 — live" title="Intelligence Feed" subtitle="Intercepted transmissions — last 24h">
         <div className="rounded-xl border border-matrix/20 bg-black/60 p-4 md:p-6 backdrop-blur">
           <div className="mb-4 flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-matrix">
             <Radio className="h-3 w-3 animate-pulse" />
             live feed
           </div>
-          <ul className="space-y-3 font-mono text-xs md:text-sm">
+          <ul className="space-y-2.5 font-mono text-xs md:text-sm">
             {feed.map((entry, i) => (
               <li key={i} className="flex gap-3 border-l border-matrix/30 pl-3 text-muted-foreground">
                 <span className="text-matrix/70 shrink-0">[{entry.ts}]</span>
@@ -193,9 +229,9 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* VIDEO ARCHIVE */}
-      <Section eyebrow="// 06" title="War Report Archive" subtitle="Future battle reports and intelligence briefings will appear here">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* ====== 06 — WAR REPORT ARCHIVE ====== */}
+      <Section eyebrow="// 06 — archive" title="War Report Archive" subtitle="Daily battle recaps">
+        <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
@@ -208,7 +244,7 @@ const Index = () => {
                   <Play className="h-5 w-5 text-matrix" />
                 </div>
                 <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                  transmission #{String(i).padStart(3, "0")}
+                  battle #{String(46 - i + 1).padStart(3, "0")}
                 </span>
                 <span className="text-[10px] uppercase tracking-[0.25em] text-matrix">awaiting upload</span>
               </div>
@@ -220,53 +256,45 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* TIMELINE */}
-      <Section eyebrow="// 07" title="Operational Timeline" subtitle="Phased deployment">
-        <div className="relative space-y-6 md:space-y-8">
-          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gradient-to-b from-matrix/60 via-matrix/20 to-transparent md:left-3" />
-          {timeline.map((t, i) => (
-            <div key={t.phase} className="relative flex gap-5 md:gap-8">
-              <div className="relative z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-matrix/60 bg-black">
-                <span className="h-2 w-2 rounded-full bg-matrix" />
-              </div>
-              <div className="flex-1 border-b border-matrix/10 pb-6">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-matrix">Phase {String(i + 1).padStart(2, "0")}</p>
-                <h3 className="mt-1 text-lg font-bold md:text-2xl">{t.title}</h3>
-              </div>
+      {/* ====== 07 — CLASSIFIED (small strip) ====== */}
+      <Section eyebrow="// 07 — restricted" title="Classified Systems">
+        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {classified.map((c) => (
+            <div
+              key={c}
+              className="flex items-center gap-2 rounded-lg border border-matrix/15 bg-card/30 px-3 py-2 backdrop-blur"
+            >
+              <Lock className="h-3 w-3 text-matrix/60 shrink-0" />
+              <span className="truncate text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{c}</span>
             </div>
           ))}
         </div>
       </Section>
 
-      {/* FINAL TRANSMISSION */}
-      <section className="relative z-10 mx-auto max-w-4xl px-5 py-20 md:py-32">
-        <div className="relative overflow-hidden rounded-2xl border border-matrix/40 bg-black/80 p-8 text-center backdrop-blur md:p-16">
+      {/* ====== FINAL CTA ====== */}
+      <section className="relative z-10 mx-auto max-w-4xl px-5 py-16 md:py-24">
+        <div className="relative overflow-hidden rounded-2xl border border-matrix/40 bg-black/80 p-8 text-center backdrop-blur md:p-14">
           <div className="absolute inset-0 grid-bg opacity-20" />
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-matrix to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-matrix to-transparent" />
 
           <div className="relative">
-            <div className="mb-6 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-matrix">
+            <div className="mb-5 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-matrix">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-matrix" />
-              final transmission // incoming
+              final transmission
             </div>
 
             <h2 className="text-4xl font-black leading-[0.95] tracking-tight text-matrix text-glow md:text-7xl">
               PICK YOUR SIDE
             </h2>
 
-            <div className="mx-auto mt-8 max-w-md space-y-3 text-sm text-muted-foreground md:text-base">
-              <p>The AI War is approaching</p>
-              <p>Two paths<br />Two futures<br />One decision</p>
-              <p className="pt-2">
-                <span className="text-tesla">Tesla Bot</span>
-                <span className="mx-2 text-muted-foreground/60">//</span>
-                <span className="text-gpt">GPT Bot</span>
-              </p>
-              <p className="pt-2 italic">The choice will soon matter</p>
-            </div>
+            <p className="mx-auto mt-6 max-w-md text-sm text-muted-foreground md:text-base">
+              <span className="text-tesla">Tesla Bot</span>
+              <span className="mx-2 text-muted-foreground/60">//</span>
+              <span className="text-gpt">GPT Bot</span>
+            </p>
 
-            <div className="mt-10 flex flex-col items-center gap-3">
+            <div className="mt-8 flex flex-col items-center gap-3">
               <Button
                 asChild
                 size="lg"
@@ -274,16 +302,12 @@ const Index = () => {
                 style={{ backgroundColor: "hsl(var(--matrix))" }}
               >
                 <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">
-                  Pick Your Side
+                  <Send className="mr-2 h-5 w-5" />
+                  Join Telegram
                 </a>
               </Button>
               <span className="text-[11px] uppercase tracking-[0.3em] text-matrix">$VSAI</span>
             </div>
-
-            <p className="mt-10 border-t border-matrix/20 pt-6 text-xs italic text-muted-foreground">
-              "The future will not be decided by machines.<br />
-              It will be decided by those who pick a side."
-            </p>
           </div>
         </div>
       </section>
@@ -296,15 +320,9 @@ const Index = () => {
             <span className="text-matrix text-glow">$VSAI</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-            <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" className="hover:text-matrix transition">
-              Telegram ↗
-            </a>
-            <a href={X_URL} target="_blank" rel="noreferrer" className="hover:text-matrix transition">
-              X ↗
-            </a>
-            <a href={SITE_URL} target="_blank" rel="noreferrer" className="hover:text-matrix transition">
-              Official Website ↗
-            </a>
+            <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" className="hover:text-matrix transition">Telegram ↗</a>
+            <a href={X_URL} target="_blank" rel="noreferrer" className="hover:text-matrix transition">X ↗</a>
+            <a href={SITE_URL} target="_blank" rel="noreferrer" className="hover:text-matrix transition">Official Website ↗</a>
             <span className="text-matrix">CA — coming soon</span>
           </div>
           <p className="text-xs tracking-wide text-muted-foreground">
@@ -312,9 +330,7 @@ const Index = () => {
             <br />
             Fake CA's are not
           </p>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-            &gt;_ pick your side
-          </p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">&gt;_ pick your side</p>
         </div>
       </footer>
     </main>
@@ -334,8 +350,8 @@ const Section = ({
   subtitle?: string;
   children: React.ReactNode;
 }) => (
-  <section className="relative z-10 mx-auto max-w-6xl px-5 py-16 md:py-24">
-    <div className="mb-8 md:mb-12">
+  <section className="relative z-10 mx-auto max-w-6xl px-5 py-10 md:py-14">
+    <div className="mb-6 md:mb-8">
       <p className="text-[10px] uppercase tracking-[0.35em] text-matrix">{eyebrow}</p>
       <h2 className="mt-2 text-2xl font-black tracking-tight md:text-4xl">{title}</h2>
       {subtitle && <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">{subtitle}</p>}
@@ -344,24 +360,28 @@ const Section = ({
   </section>
 );
 
-const BotCard = ({
+const SideCard = ({
   side,
   name,
   tag,
-  support,
+  pct,
+  supply,
+  leading,
 }: {
   side: "tesla" | "gpt";
   name: string;
   tag: string;
-  support: number;
+  pct: number;
+  supply: number;
+  leading: boolean;
 }) => {
   const isTesla = side === "tesla";
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-card/60 p-4 backdrop-blur transition duration-300 hover:-translate-y-0.5 md:p-6 ${
+      className={`relative overflow-hidden rounded-xl border bg-card/60 p-5 backdrop-blur transition ${
         isTesla
-          ? "border-tesla/40 glow-tesla-soft hover:glow-tesla hover:border-tesla"
-          : "border-gpt/40 glow-gpt-soft hover:glow-gpt hover:border-gpt"
+          ? "border-tesla/40 glow-tesla-soft hover:glow-tesla"
+          : "border-gpt/40 glow-gpt-soft hover:glow-gpt"
       }`}
     >
       <div
@@ -369,62 +389,78 @@ const BotCard = ({
           isTesla ? "bg-tesla/30" : "bg-gpt/30"
         }`}
       />
-      <div className="relative flex flex-col items-start gap-2">
-        <span className={`text-[10px] tracking-[0.25em] ${isTesla ? "text-tesla" : "text-gpt"}`}>{tag}</span>
-        <span className="text-lg font-bold md:text-2xl">{name}</span>
-        <div className="mt-2 w-full">
-          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
-            <span>faction support</span>
-            <span className={isTesla ? "text-tesla" : "text-gpt"}>{support}%</span>
+      <div className="relative">
+        <div className="flex items-start justify-between">
+          <div>
+            <span className={`text-[10px] tracking-[0.25em] ${isTesla ? "text-tesla" : "text-gpt"}`}>{tag}</span>
+            <h3 className="mt-1 text-xl font-bold md:text-2xl">{name}</h3>
           </div>
-          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/5">
-            <div
-              className={`h-full ${isTesla ? "bg-tesla" : "bg-gpt"}`}
-              style={{ width: `${support}%` }}
-            />
+          {leading && (
+            <span className={`rounded border px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] ${
+              isTesla ? "border-tesla/50 text-tesla" : "border-gpt/50 text-gpt"
+            }`}>
+              leading
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4 flex items-end justify-between">
+          <span className={`font-mono text-3xl font-bold md:text-4xl ${isTesla ? "text-tesla" : "text-gpt"}`}>
+            {pct.toFixed(1)}%
+          </span>
+          <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">control</span>
+        </div>
+
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+          <div
+            className={`h-full ${isTesla ? "bg-tesla" : "bg-gpt"}`}
+            style={{ width: `${pct}%`, boxShadow: `0 0 10px hsl(var(--${side}))` }}
+          />
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 text-[10px] uppercase tracking-[0.2em]">
+          <div>
+            <p className="text-muted-foreground">supply committed</p>
+            <p className="mt-0.5 font-mono text-sm text-foreground">{(supply / 1_000_000).toFixed(2)}M $VSAI</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">odds</p>
+            <p className="mt-0.5 font-mono text-sm text-foreground">{(100 / pct).toFixed(2)}x</p>
           </div>
         </div>
-        <span className="mt-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">pick side</span>
       </div>
     </div>
   );
 };
 
+const Stat = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
+  <div className="rounded-lg border border-matrix/10 bg-black/40 p-3">
+    <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
+    <p className={`mt-1 font-mono text-base font-bold md:text-lg ${highlight ? "text-matrix text-glow" : "text-foreground"}`}>
+      {value}
+    </p>
+  </div>
+);
+
+/* ---------- Anticipated Locations ---------- */
+
 const briefings = [
   {
-    icon: Activity,
+    icon: Satellite,
     code: "LOC-01",
-    title: "Fusion Reactor Alpha",
-    desc: "A strategic energy source currently under observation. Output signatures suggest reactivation imminent.",
+    title: "Mars Launch Facility",
+    desc: "Forward operating base preparing for expansion. Orbital telemetry redacted.",
   },
   {
     icon: Shield,
     code: "LOC-02",
     title: "Quantum Vault",
-    desc: "A classified facility containing advanced computational resources. Access pathways remain unmapped.",
-  },
-  {
-    icon: Cpu,
-    code: "LOC-03",
-    title: "Neural Core Nexus",
-    desc: "A central intelligence hub with unknown capabilities. Signal patterns defy current analysis.",
-  },
-  {
-    icon: Satellite,
-    code: "LOC-04",
-    title: "Mars Launch Facility",
-    desc: "A forward operating base preparing for expansion. Orbital telemetry redacted.",
-  },
-  {
-    icon: Triangle,
-    code: "LOC-05",
-    title: "Titan Robotics Complex",
-    desc: "An autonomous manufacturing stronghold. Production volume exceeds reported figures.",
+    desc: "Classified facility containing advanced computational resources. Access pathways unmapped.",
   },
   {
     icon: Radio,
-    code: "LOC-06",
-    title: "Orbital Relay 9",
+    code: "LOC-03",
+    title: "Orbital Relay",
     desc: "Encrypted relay node redirecting traffic between unknown endpoints. Origin unverified.",
   },
 ];
@@ -448,82 +484,28 @@ const IntelCard = ({
     </div>
     <h3 className="mt-4 text-base font-bold md:text-lg">{title}</h3>
     <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{desc}</p>
-    <p className="mt-4 text-[9px] uppercase tracking-[0.3em] text-matrix/70">status: monitoring</p>
-  </div>
-);
-
-const InfluenceBar = ({ label, value, side }: { label: string; value: number; side: "tesla" | "gpt" }) => {
-  const isTesla = side === "tesla";
-  return (
-    <div>
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.25em]">
-        <span className={isTesla ? "text-tesla" : "text-gpt"}>{label}</span>
-        <span className="font-mono text-muted-foreground">{value}%</span>
-      </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/5">
-        <div
-          className={`h-full ${isTesla ? "bg-tesla" : "bg-gpt"}`}
-          style={{ width: `${value}%`, boxShadow: `0 0 12px hsl(var(--${side}))` }}
-        />
-      </div>
-    </div>
-  );
-};
-
-const Stat = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
-  <div className="rounded-lg border border-matrix/10 bg-black/40 p-3">
-    <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
-    <p className={`mt-1 font-mono text-lg font-bold ${highlight ? "text-matrix text-glow" : "text-foreground"}`}>
-      {value}
-    </p>
+    <p className="mt-4 text-[9px] uppercase tracking-[0.3em] text-matrix/70">status // monitoring</p>
   </div>
 );
 
 const classified = [
   "Battle Vault Protocol",
   "MegaTron Division",
-  "Territory Control Network",
-  "Neural Eclipse Event",
+  "Territory Control",
+  "Neural Eclipse",
   "Operation Iron Titan",
   "Omega Protocol",
 ];
 
-const ClassifiedCard = ({ name }: { name: string }) => (
-  <div className="group relative overflow-hidden rounded-xl border border-matrix/20 bg-card/30 p-5 backdrop-blur">
-    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_8px,hsl(var(--matrix)/0.04)_8px,hsl(var(--matrix)/0.04)_9px)]" />
-    <div className="relative">
-      <div className="flex items-center justify-between">
-        <Lock className="h-4 w-4 text-matrix/60" />
-        <span className="text-[9px] uppercase tracking-[0.3em] text-destructive/70">restricted</span>
-      </div>
-      <h3 className="mt-4 text-base font-bold md:text-lg">{name}</h3>
-      <p className="mt-3 inline-block rounded border border-matrix/30 bg-black/60 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.25em] text-matrix">
-        [classified]
-      </p>
-    </div>
-  </div>
-);
-
 const feed = [
-  { ts: "04:21:07", msg: "GPT reconnaissance activity detected near the Quantum Vault" },
-  { ts: "03:58:42", msg: "Tesla Robotics expanded operations in Sector Alpha" },
+  { ts: "04:21:07", msg: "GPT supply surge detected — +1.2M $VSAI committed" },
+  { ts: "03:58:42", msg: "Tesla faction reclaimed Sector Alpha control" },
   { ts: "03:14:19", msg: "Encrypted transmission intercepted // signal source unknown" },
-  { ts: "02:47:55", msg: "Anomalous heat signature recorded at Fusion Reactor Alpha" },
+  { ts: "02:47:55", msg: "Bonus mission OP-A7 crossed 60% threshold" },
   { ts: "02:11:03", msg: "Unidentified payload launched from Mars Launch Facility" },
-  { ts: "01:39:28", msg: "Neural Core Nexus broadcast frequency shifted — analysis pending" },
-  { ts: "01:02:11", msg: "Titan Robotics Complex output increased by undisclosed margin" },
-  { ts: "00:46:33", msg: "Faction operatives confirmed in three additional territories" },
-  { ts: "00:18:09", msg: "Orbital Relay 9 rerouted traffic to unverified endpoint" },
-  { ts: "00:02:14", msg: "Further details classified // standby for next transmission" },
-];
-
-const timeline = [
-  { phase: "01", title: "Pick Your Side" },
-  { phase: "02", title: "War Room Activation" },
-  { phase: "03", title: "Territory Intelligence" },
-  { phase: "04", title: "Classified Systems" },
-  { phase: "05", title: "Conflict Approaching" },
-  { phase: "06", title: "Transmission Incoming" },
+  { ts: "01:39:28", msg: "Holder count breached 1,800 — expansion goal advancing" },
+  { ts: "01:02:11", msg: "Volume surge: +$42K in last hour" },
+  { ts: "00:18:09", msg: "Orbital Relay rerouted traffic to unverified endpoint" },
 ];
 
 const ScanlineOverlay = () => (
@@ -536,7 +518,7 @@ const ScanlineOverlay = () => (
   />
 );
 
-/* ---------- Daily Battle ---------- */
+/* ---------- Battle Countdown ---------- */
 
 const BattleCountdown = () => {
   const [label, setLabel] = useState("--:--:--");
@@ -558,75 +540,38 @@ const BattleCountdown = () => {
   return <span className="font-mono text-matrix">{label}</span>;
 };
 
-const BattleSide = ({
-  side,
-  name,
-  momentum,
-  state,
-}: {
-  side: "tesla" | "gpt";
-  name: string;
-  momentum: number;
-  state: string;
-}) => {
-  const isTesla = side === "tesla";
-  return (
-    <div
-      className={`relative overflow-hidden rounded-xl border p-4 md:p-5 ${
-        isTesla ? "border-tesla/40 bg-tesla/5" : "border-gpt/40 bg-gpt/5"
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <span className={`text-[10px] uppercase tracking-[0.25em] ${isTesla ? "text-tesla" : "text-gpt"}`}>
-          {name}
-        </span>
-        <span className="font-mono text-xs text-muted-foreground">{momentum}%</span>
-      </div>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-        <div
-          className={`h-full ${isTesla ? "bg-tesla" : "bg-gpt"}`}
-          style={{ width: `${momentum}%`, boxShadow: `0 0 10px hsl(var(--${side}))` }}
-        />
-      </div>
-      <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">status // {state}</p>
-    </div>
-  );
-};
-
-/* ---------- Special Operations ---------- */
+/* ---------- Special Operations (3 compact cards) ---------- */
 
 const specialOps = [
   {
     icon: Crosshair,
     name: "Hacked Artillery Network",
     code: "OP-A7",
-    objective: "Seize fire control of contested grid",
-    progress: 64,
+    tesla: 64,
+    gpt: 36,
     threshold: 80,
-  },
-  {
-    icon: Radio,
-    name: "Quantum Signal Capture",
-    code: "OP-Q3",
-    objective: "Intercept encrypted faction transmissions",
-    progress: 31,
-    threshold: 75,
+    bonus: "250K $VSAI",
+    status: "active",
   },
   {
     icon: Satellite,
     name: "Orbital Relay Breach",
     code: "OP-R9",
-    objective: "Override relay routing protocols",
-    progress: 82,
-    threshold: 90,
+    tesla: 38,
+    gpt: 62,
+    threshold: 75,
+    bonus: "400K $VSAI",
+    status: "active",
   },
   {
     icon: Shield,
-    name: "Reactor Security Override",
+    name: "Reactor Override",
     code: "OP-S1",
-    objective: "Bypass perimeter defense systems",
-    progress: 47,
+    tesla: 52,
+    gpt: 48,
     threshold: 70,
+    bonus: "180K $VSAI",
+    status: "live",
   },
 ];
 
@@ -634,49 +579,60 @@ const SpecialOpCard = ({
   icon: Icon,
   name,
   code,
-  objective,
-  progress,
+  tesla,
+  gpt,
   threshold,
+  bonus,
+  status,
 }: {
   icon: typeof Crosshair;
   name: string;
   code: string;
-  objective: string;
-  progress: number;
+  tesla: number;
+  gpt: number;
   threshold: number;
+  bonus: string;
+  status: string;
 }) => (
   <div className="group relative overflow-hidden rounded-xl border border-matrix/20 bg-card/40 p-5 backdrop-blur transition hover:border-matrix/50">
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-3">
         <Icon className="h-5 w-5 text-matrix" />
         <div>
-          <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code} // active</p>
-          <h3 className="mt-0.5 text-base font-bold md:text-lg">{name}</h3>
+          <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code} // {status}</p>
+          <h3 className="mt-0.5 text-base font-bold">{name}</h3>
         </div>
       </div>
       <Trophy className="h-4 w-4 text-matrix/50" />
     </div>
-    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{objective}</p>
-    <div className="mt-4">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.25em]">
-        <span className="text-muted-foreground">mission progress</span>
-        <span className="font-mono text-matrix">
-          {progress}% / {threshold}%
-        </span>
+
+    <div className="mt-4 space-y-2">
+      <div>
+        <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em]">
+          <span className="text-tesla">Tesla</span>
+          <span className="font-mono text-muted-foreground">{tesla}%</span>
+        </div>
+        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/5">
+          <div className="h-full bg-tesla" style={{ width: `${tesla}%` }} />
+        </div>
       </div>
-      <div className="relative mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-        <div
-          className="h-full bg-matrix"
-          style={{ width: `${progress}%`, boxShadow: "0 0 10px hsl(var(--matrix))" }}
-        />
-        <div
-          className="absolute top-0 h-full w-px bg-destructive/80"
-          style={{ left: `${threshold}%` }}
-        />
+      <div>
+        <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em]">
+          <span className="text-gpt">GPT</span>
+          <span className="font-mono text-muted-foreground">{gpt}%</span>
+        </div>
+        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/5">
+          <div className="h-full bg-gpt" style={{ width: `${gpt}%` }} />
+        </div>
       </div>
-      <p className="mt-2 text-[9px] uppercase tracking-[0.3em] text-muted-foreground">
-        victory threshold // {threshold}%
-      </p>
+    </div>
+
+    <div className="mt-4 flex items-center justify-between border-t border-matrix/15 pt-3 text-[10px] uppercase tracking-[0.2em]">
+      <span className="text-muted-foreground">threshold <span className="font-mono text-matrix">{threshold}%</span></span>
+      <span className="flex items-center gap-1 text-matrix">
+        <Coins className="h-3 w-3" />
+        <span className="font-mono">{bonus}</span>
+      </span>
     </div>
   </div>
 );
@@ -684,9 +640,12 @@ const SpecialOpCard = ({
 /* ---------- Expansion Monitor ---------- */
 
 const expansion = [
-  { icon: TrendingUp, label: "Holder Goal", current: "1,847", target: "5,000", progress: 37 },
-  { icon: Activity, label: "Volume Milestone", current: "$182K", target: "$500K", progress: 36 },
-  { icon: Target, label: "Community Expansion", current: "2,310", target: "10,000", progress: 23 },
+  { icon: Users, label: "Holders Today", current: "+184", target: "+500", progress: 37, outcome: "Sector secured" },
+  { icon: Activity, label: "24h Volume Goal", current: "$182K", target: "$500K", progress: 36, outcome: "Reserve burn unlocked" },
+  { icon: TrendingUp, label: "Market Cap Goal", current: "$1.2M", target: "$5M", progress: 24, outcome: "Facility overrun" },
+  { icon: Target, label: "Community Growth", current: "2,310", target: "10,000", progress: 23, outcome: "Network expansion complete" },
+  { icon: Radio, label: "Telegram Activity", current: "1.8K msgs", target: "5K msgs", progress: 36, outcome: "Signal boost active" },
+  { icon: Flame, label: "X Engagement Goal", current: "412K imp", target: "1M imp", progress: 41, outcome: "Supply eliminated" },
 ];
 
 const ExpansionRow = ({
@@ -695,16 +654,18 @@ const ExpansionRow = ({
   current,
   target,
   progress,
+  outcome,
 }: {
   icon: typeof TrendingUp;
   label: string;
   current: string;
   target: string;
   progress: number;
+  outcome: string;
 }) => (
-  <div className="rounded-xl border border-matrix/20 bg-card/40 p-4 backdrop-blur md:p-5">
+  <div className="rounded-xl border border-matrix/20 bg-card/40 p-4 backdrop-blur">
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 text-matrix" />
         <span className="text-xs uppercase tracking-[0.25em] text-foreground/90">{label}</span>
       </div>
@@ -718,12 +679,15 @@ const ExpansionRow = ({
         style={{ width: `${progress}%`, boxShadow: "0 0 10px hsl(var(--matrix))" }}
       />
     </div>
+    <p className="mt-2 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+      unlocks // <span className="text-matrix">{outcome}</span>
+    </p>
   </div>
 );
 
 const milestones = [
   { title: "Facility Overrun", status: "achieved", note: "Sector 3 secured" },
-  { title: "Network Expansion Complete", status: "achieved", note: "Relay 4 online" },
+  { title: "Network Expansion", status: "achieved", note: "Relay 4 online" },
   { title: "Supply Eliminated", status: "pending", note: "Awaiting threshold" },
 ];
 
