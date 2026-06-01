@@ -75,6 +75,38 @@ const Index = () => {
         </div>
       </section>
 
+      {/* DAILY BATTLE */}
+      <Section eyebrow="// 01 — today" title="Daily Battle" subtitle="A new conflict every 24h — one faction wins">
+        <div className="rounded-xl border border-matrix/30 bg-black/60 p-5 md:p-8 backdrop-blur">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-[10px] uppercase tracking-[0.25em]">
+            <span className="flex items-center gap-2 text-matrix">
+              <Swords className="h-3 w-3 animate-pulse" />
+              battle #047 // in progress
+            </span>
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              next result in <BattleCountdown />
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <BattleSide side="tesla" name="Tesla Bot" momentum={48} state="advancing" />
+            <BattleSide side="gpt" name="GPT Bot" momentum={52} state="holding line" />
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Stat label="Battle Condition" value="Sector 7" />
+            <Stat label="Intel Updates" value="03 today" />
+            <Stat label="Active Engagements" value="12" />
+            <Stat label="Last Winner" value="GPT" highlight />
+          </div>
+
+          <p className="mt-6 border-t border-matrix/15 pt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            war report drops at battle close // pick your side before then
+          </p>
+        </div>
+      </Section>
+
       {/* INTELLIGENCE BRIEFING */}
       <Section eyebrow="// 02" title="Intelligence Briefing" subtitle="Locations under active observation">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
