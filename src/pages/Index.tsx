@@ -453,9 +453,9 @@ const MilestoneRow = ({
 /* ---------- Transmissions ---------- */
 
 const transmissions = [
-  { icon: Video, code: "TX-019", title: "Recovered Security Footage", status: "decrypting" },
-  { icon: Shield, code: "TX-020", title: "Facility Breach Confirmed", status: "released" },
-  { icon: Radio, code: "TX-021", title: "Transmission Incoming", status: "pending" },
+  { icon: Video, code: "TX-019", title: "Recovered Security Footage", status: "decrypted", src: txSecurity.url },
+  { icon: Shield, code: "TX-020", title: "Facility Breach Confirmed", status: "released", src: txBreach.url },
+  { icon: Radio, code: "TX-021", title: "Transmission Incoming", status: "incoming", src: txIncoming.url },
 ];
 
 const TransmissionCard = ({
@@ -463,37 +463,63 @@ const TransmissionCard = ({
   code,
   title,
   status,
+  src,
 }: {
   icon: typeof Video;
   code: string;
   title: string;
   status: string;
-}) => (
-  <a
-    href={X_URL}
-    target="_blank"
-    rel="noreferrer"
-    className="group relative block overflow-hidden rounded-xl border border-matrix/20 bg-black/60 backdrop-blur transition hover:border-matrix/60"
-  >
-    <div className="relative aspect-video w-full overflow-hidden">
-      <div className="absolute inset-0 grid-bg opacity-30" />
-      <div className="absolute inset-0 bg-gradient-to-br from-matrix/10 via-transparent to-black/60" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <PlayCircle className="h-10 w-10 text-matrix opacity-80 group-hover:scale-110 transition" />
+  src: string;
+}) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const handlePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.play();
+    setPlaying(true);
+  };
+
+  return (
+    <div className="group relative block overflow-hidden rounded-xl border border-matrix/20 bg-black/60 backdrop-blur transition hover:border-matrix/60">
+      <div className="relative aspect-video w-full overflow-hidden bg-black">
+        <video
+          ref={videoRef}
+          src={src}
+          preload="metadata"
+          playsInline
+          controls={playing}
+          onEnded={() => setPlaying(false)}
+          onPause={() => setPlaying(false)}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {!playing && (
+          <button
+            type="button"
+            onClick={handlePlay}
+            aria-label={`Play ${title}`}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-matrix/10 via-transparent to-black/60" />
+            <div className="absolute inset-0 grid-bg opacity-20" />
+            <PlayCircle className="relative h-12 w-12 text-matrix opacity-90 transition group-hover:scale-110" style={{ filter: "drop-shadow(0 0 12px hsl(var(--matrix)))" }} />
+            <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full border border-matrix/30 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] text-matrix">
+              <span className="h-1 w-1 animate-pulse rounded-full bg-matrix" />
+              {status}
+            </div>
+          </button>
+        )}
       </div>
-      <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full border border-matrix/30 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] text-matrix">
-        <span className="h-1 w-1 animate-pulse rounded-full bg-matrix" />
-        {status}
+      <div className="flex items-center gap-2 p-3">
+        <Icon className="h-3.5 w-3.5 text-matrix shrink-0" />
+        <div className="min-w-0">
+          <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code}</p>
+          <p className="truncate text-xs font-bold">{title}</p>
+        </div>
       </div>
     </div>
-    <div className="flex items-center gap-2 p-3">
-      <Icon className="h-3.5 w-3.5 text-matrix shrink-0" />
-      <div className="min-w-0">
-        <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code}</p>
-        <p className="truncate text-xs font-bold">{title}</p>
-      </div>
-    </div>
-  </a>
-);
+  );
+};
 
 export default Index;
