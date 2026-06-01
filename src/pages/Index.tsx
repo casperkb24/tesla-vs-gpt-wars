@@ -136,13 +136,15 @@ const Index = () => {
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             <Button
               asChild
-              className="h-12 border border-tesla/50 bg-tesla/10 text-tesla hover:bg-tesla/20 font-bold uppercase tracking-[0.2em]"
+              className="h-12 bg-tesla text-background hover:bg-tesla/90 font-bold uppercase tracking-[0.2em] border-0"
+              style={{ boxShadow: "0 0 24px hsl(var(--tesla) / 0.55)" }}
             >
               <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick Tesla Bot</a>
             </Button>
             <Button
               asChild
-              className="h-12 border border-gpt/50 bg-gpt/10 text-gpt hover:bg-gpt/20 font-bold uppercase tracking-[0.2em]"
+              className="h-12 bg-gpt text-background hover:bg-gpt/90 font-bold uppercase tracking-[0.2em] border-0"
+              style={{ boxShadow: "0 0 24px hsl(var(--gpt) / 0.55)" }}
             >
               <a href={TELEGRAM_URL} target="_blank" rel="noreferrer">Pick GPT Bot</a>
             </Button>
