@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Send, Terminal, Lock, Radio, Shield, Activity, Cpu, Satellite, Triangle, Play } from "lucide-react";
+import { Send, Terminal, Lock, Radio, Shield, Activity, Cpu, Satellite, Triangle, Play, Swords, Target, TrendingUp, Crosshair, Clock, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
