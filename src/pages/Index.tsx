@@ -1,27 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Terminal,
   Radio,
-  Shield,
+
   Swords,
   Clock,
   Lock,
-  Flame,
-  Coins,
-  TrendingUp,
-  Activity,
-  Users,
-  RotateCw,
-  Gift,
-  Video,
   PlayCircle,
-  Wallet,
   Trophy,
   Plug,
   Target,
+  Gift,
   Repeat,
+  Video,
+  Rocket,
+  Database,
 } from "lucide-react";
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import txSecurity from "@/assets/tx-security.mp4.asset.json";
 import txBreach from "@/assets/tx-breach.mov.asset.json";
@@ -32,6 +26,7 @@ import phantomGhost from "@/assets/phantom-ghost.asset.json";
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const PUMP_URL = "https://pump.fun";
+
 
 /* ---------- Live mock numbers ---------- */
 const TESLA_POWER_PCT = 47.3;
@@ -119,8 +114,16 @@ const Index = () => {
         </div>
 
         {/* Right — Phantom */}
-        <PhantomButton wallet={wallet} onConnect={connect} />
+        <div className="flex flex-col items-end gap-0.5">
+          <PhantomButton wallet={wallet} onConnect={connect} />
+          {wallet.status === "connected" && (
+            <span className="text-[8px] md:text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
+              Connected: {short(wallet.address)}
+            </span>
+          )}
+        </div>
       </header>
+
 
       {/* ====== HERO ====== */}
       <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-5 pb-3 text-center md:pt-8">
@@ -201,13 +204,17 @@ const Index = () => {
             <ActionPanel wallet={wallet} onConnect={connect} onPick={pick} onClaimDemo={simulateClaim} onReset={reset} />
           </div>
 
-          {/* Pool stats */}
-          <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Stat label="Pool" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
-            <Stat label="≈ SOL" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
-            <Stat label="≈ USD" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
-            <Stat label="Last Winner" value="GPT" highlight />
-          </div>
+          {/* Stats — protocol when disconnected, position when connected */}
+          {wallet.status === "disconnected" ? (
+            <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
+              <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
+              <Stat label="≈ SOL" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
+              <Stat label="≈ USD" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
+              <Stat label="Last Winner" value="GPT" highlight />
+            </div>
+          ) : "position" in wallet && wallet.position ? (
+            <YourPositionStats position={wallet.position} />
+          ) : null}
         </div>
       </section>
 
@@ -223,29 +230,11 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ====== WEEKLY VAULT SURVEILLANCE ====== */}
-      <Section eyebrow="// reserve activity" title="Weekly Vault Surveillance">
+      {/* ====== BATTLE ARENAS ====== */}
+      <Section eyebrow="// battle arenas" title="Battle Arenas">
         <div className="grid gap-3 md:grid-cols-3">
-          {vaultEvents.map((op) => (
-            <VaultEventCard key={op.name} {...op} />
-          ))}
-        </div>
-      </Section>
-
-      {/* ====== MILESTONES ====== */}
-      <Section eyebrow="// community goals" title="Milestones">
-        <div className="grid gap-2 md:grid-cols-2">
-          {milestones.map((m) => (
-            <MilestoneRow key={m.label} {...m} />
-          ))}
-        </div>
-      </Section>
-
-      {/* ====== TRANSMISSIONS ====== */}
-      <Section eyebrow="// transmission archive" title="Recovered Footage">
-        <div className="grid gap-3 md:grid-cols-3">
-          {transmissions.map((t) => (
-            <TransmissionCard key={t.title} {...t} />
+          {arenas.map((t) => (
+            <ArenaCard key={t.title} {...t} />
           ))}
         </div>
         <p className="mt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -257,7 +246,6 @@ const Index = () => {
         </p>
       </Section>
 
-      {/* Footer */}
       <footer className="relative z-10 border-t border-matrix/10 px-5 py-8 md:px-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
@@ -502,95 +490,48 @@ const BattleCountdown = () => {
   return <span className="font-mono text-matrix">in {label}</span>;
 };
 
-/* ---------- Vault ---------- */
+/* ---------- Your Position Stats (replaces protocol stats when connected) ---------- */
 
-const vaultEvents = [
-  { icon: Flame, name: "Reserve Burn Event", code: "VLT-01", detail: "120K $VSAI", sub: "scheduled · this week" },
-  { icon: Coins, name: "Reserve Purchase Event", code: "VLT-02", detail: "◎ 8.5 SOL", sub: "allocated · pending execution" },
-  { icon: Gift, name: "Participant Reward Event", code: "VLT-03", detail: "75K $VSAI", sub: "distributed · last 24h" },
-];
-
-const VaultEventCard = ({
-  icon: Icon,
-  name,
-  code,
-  detail,
-  sub,
+const YourPositionStats = ({
+  position,
 }: {
-  icon: typeof Flame;
-  name: string;
-  code: string;
-  detail: string;
-  sub: string;
-}) => (
-  <div className="rounded-xl border border-matrix/20 bg-card/40 p-4 backdrop-blur transition hover:border-matrix/50">
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex items-center gap-2.5">
-        <Icon className="h-4 w-4 text-matrix" />
-        <div>
-          <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">{code}</p>
-          <h3 className="mt-0.5 text-sm font-bold">{name}</h3>
+  position: { side: "tesla" | "gpt"; amount: number; sol: number; usd: number };
+}) => {
+  const accent = position.side;
+  return (
+    <div className="mt-5 rounded-xl border border-matrix/20 bg-black/50 p-3 md:p-4">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em]">
+        <span className={`flex items-center gap-1.5 text-${accent}`}>
+          <Lock className="h-3 w-3" /> your position
+        </span>
+        <span className="text-muted-foreground">status · locked</span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-6">
+        <MiniStat label="Side" value={position.side.toUpperCase()} accent={accent} />
+        <MiniStat label="Locked" value={`${(position.amount / 1000).toFixed(0)}K`} />
+        <MiniStat label="≈ SOL" value={`◎ ${position.sol}`} />
+        <MiniStat label="≈ USD" value={`$${position.usd}`} />
+        <MiniStat label="Status" value="LOCKED" accent="matrix" />
+        <div className="rounded-lg border border-white/5 bg-black/40 p-2">
+          <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Time</p>
+          <p className="mt-0.5 font-mono text-sm font-bold text-matrix">
+            <BattleCountdown />
+          </p>
         </div>
       </div>
-      <span className="flex items-center gap-1 text-matrix text-[10px] uppercase tracking-[0.2em]">
-        <Coins className="h-3 w-3" />
-        <span className="font-mono">{detail}</span>
-      </span>
     </div>
-    <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">{sub}</p>
-  </div>
-);
+  );
+};
 
-/* ---------- Milestones ---------- */
+/* ---------- Battle Arenas ---------- */
 
-const milestones = [
-  { icon: Users, label: "Holders", current: "1,842", target: "5,000", progress: 37 },
-  { icon: Activity, label: "24h Volume", current: "$182K", target: "$500K", progress: 36 },
-  { icon: TrendingUp, label: "Market Cap", current: "$1.2M", target: "$5M", progress: 24 },
-  { icon: Flame, label: "X Engagement", current: "412K", target: "1M", progress: 41 },
+const arenas = [
+  { icon: Database, code: "ARN-01", title: "Quantum Vault", status: "online", src: txSecurity.url },
+  { icon: Radio, code: "ARN-02", title: "Orbital Relay", status: "broadcasting", src: txBreach.url },
+  { icon: Rocket, code: "ARN-03", title: "Mars Launch Facility", status: "armed", src: txIncoming.url },
 ];
 
-const MilestoneRow = ({
-  icon: Icon,
-  label,
-  current,
-  target,
-  progress,
-}: {
-  icon: typeof Users;
-  label: string;
-  current: string;
-  target: string;
-  progress: number;
-}) => (
-  <div className="rounded-xl border border-matrix/20 bg-card/40 p-3.5 backdrop-blur">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-matrix" />
-        <span className="text-xs uppercase tracking-[0.25em]">{label}</span>
-      </div>
-      <span className="font-mono text-xs text-muted-foreground">
-        <span className="text-matrix">{current}</span> / {target}
-      </span>
-    </div>
-    <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-      <div
-        className="h-full bg-gradient-to-r from-matrix to-matrix/70"
-        style={{ width: `${progress}%`, boxShadow: "0 0 10px hsl(var(--matrix))" }}
-      />
-    </div>
-  </div>
-);
-
-/* ---------- Transmissions ---------- */
-
-const transmissions = [
-  { icon: Video, code: "TX-019", title: "Recovered Security Footage", status: "decrypted", src: txSecurity.url },
-  { icon: Shield, code: "TX-020", title: "Facility Breach Confirmed", status: "released", src: txBreach.url },
-  { icon: Radio, code: "TX-021", title: "Transmission Incoming", status: "incoming", src: txIncoming.url },
-];
-
-const TransmissionCard = ({
+const ArenaCard = ({
   icon: Icon,
   code,
   title,
@@ -603,6 +544,7 @@ const TransmissionCard = ({
   status: string;
   src: string;
 }) => {
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
