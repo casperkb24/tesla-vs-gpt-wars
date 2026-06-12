@@ -69,6 +69,7 @@ const Index = () => {
     setWallet({
       status: "connected",
       address: "7xKXtg2CW8Df4Hk9JpQ1mZbN3vRuLs6yPqA8oE5dF1nB",
+      balance: 250_000,
       position: null,
     });
 
@@ -78,6 +79,7 @@ const Index = () => {
         ? {
             status: "connected",
             address: w.address,
+            balance: w.balance,
             position: { side, amount: 250_000, sol: 0.42, usd: 78 },
           }
         : w,
@@ -89,6 +91,7 @@ const Index = () => {
         ? {
             status: "connected",
             address: w.address,
+            balance: w.balance,
             claim: { side: "gpt", principal: 250_000, bonus: 38_500 },
           }
         : w,
@@ -116,11 +119,18 @@ const Index = () => {
           </span>
         </a>
 
-        {/* Center — branding */}
-        <div className="flex items-center gap-1.5 font-black tracking-tight">
-          <Terminal className="h-4 w-4 text-matrix" />
-          <span className="text-matrix text-glow text-sm md:text-base">$VSAI</span>
-        </div>
+        {/* Center — Buy $VSAI primary action */}
+        <a
+          href={BUY_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center gap-1.5 rounded-full bg-matrix px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-background transition hover:opacity-90"
+          style={{ boxShadow: "0 0 22px hsl(var(--matrix) / 0.6)" }}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          Buy <span className="hidden sm:inline">$VSAI</span>
+        </a>
+
 
         {/* Right — Phantom */}
         <div className="flex flex-col items-end gap-0.5">
