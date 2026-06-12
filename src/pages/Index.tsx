@@ -324,7 +324,7 @@ const ActionPanel = ({
         style={{ boxShadow: "0 0 28px rgba(171,159,242,0.55)" }}
       >
         <img src={phantomGhost.url} alt="" className="h-6 w-6 rounded-full object-cover" />
-        Connect Phantom to Participate
+        Connect to Pick Your Side
       </button>
     );
   }
