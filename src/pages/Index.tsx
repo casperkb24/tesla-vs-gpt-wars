@@ -124,11 +124,15 @@ const Index = () => {
           href={BUY_URL}
           target="_blank"
           rel="noreferrer"
-          className="group flex items-center gap-1.5 rounded-full bg-matrix px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-background transition hover:opacity-90"
-          style={{ boxShadow: "0 0 28px hsl(var(--matrix) / 0.75)" }}
+          className="group flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition hover:opacity-90"
+          style={{
+            backgroundColor: "hsl(var(--matrix))",
+            color: "hsl(var(--background))",
+            boxShadow: "0 0 28px hsl(var(--matrix) / 0.75)",
+          }}
         >
-          <Zap className="h-3.5 w-3.5" />
-          BUY $VSAI
+          <Zap className="h-3.5 w-3.5" strokeWidth={3} />
+          <span>BUY $VSAI</span>
         </a>
 
 
