@@ -406,7 +406,23 @@ const ActionPanel = ({
     );
   }
 
-  // 2) Connected, no position
+  // 2a) Connected but no $VSAI balance → push to buy
+  if (wallet.balance <= 0) {
+    return (
+      <a
+        href={BUY_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-matrix py-4 text-sm font-bold uppercase tracking-[0.2em] text-background hover:opacity-90"
+        style={{ boxShadow: "0 0 28px hsl(var(--matrix) / 0.6)" }}
+      >
+        <ShoppingCart className="h-5 w-5" />
+        Buy $VSAI to Enter the Battle
+      </a>
+    );
+  }
+
+  // 2b) Connected, no position
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <Button
