@@ -364,7 +364,7 @@ const ActionPanel = ({
       <div className={`rounded-xl border bg-black/50 p-4 md:p-5 border-${accent}/50`}>
         <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em]">
           <span className={`flex items-center gap-1.5 text-${accent}`}>
-            <Lock className="h-3.5 w-3.5" /> your position
+            <Lock className="h-3.5 w-3.5" /> position active
           </span>
           <span className="text-muted-foreground">
             resolves <BattleCountdown />
