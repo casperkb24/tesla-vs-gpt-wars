@@ -125,10 +125,10 @@ const Index = () => {
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-1.5 rounded-full bg-matrix px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-background transition hover:opacity-90"
-          style={{ boxShadow: "0 0 22px hsl(var(--matrix) / 0.6)" }}
+          style={{ boxShadow: "0 0 28px hsl(var(--matrix) / 0.75)" }}
         >
           <Zap className="h-3.5 w-3.5" />
-          Buy <span className="hidden sm:inline">$VSAI</span>
+          BUY $VSAI
         </a>
 
 
@@ -513,10 +513,19 @@ const CAStat = ({ ca }: { ca: string }) => {
     <button
       type="button"
       onClick={copy}
-      className="group flex flex-col rounded-lg border border-matrix/30 bg-black/40 p-2.5 text-left transition hover:border-matrix/70"
+      className="group flex flex-col rounded-lg border border-matrix/30 bg-black/40 p-2.5 text-left transition hover:border-matrix/70 hover:bg-matrix/5"
     >
-      <span className="flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
-        CA
+      <span className="flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-muted-foreground transition group-hover:text-matrix">
+        {copied ? (
+          <span className="flex items-center gap-1 text-matrix">
+            COPIED <Check className="h-3 w-3" />
+          </span>
+        ) : (
+          <span className="flex items-center gap-1">
+            <span className="group-hover:hidden">COPY $VSAI CA</span>
+            <span className="hidden group-hover:inline">Click to Copy</span>
+          </span>
+        )}
         {copied ? (
           <Check className="h-3 w-3 text-matrix" />
         ) : (
