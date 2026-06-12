@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Terminal,
   Radio,
@@ -6,22 +6,16 @@ import {
   Swords,
   Clock,
   Lock,
-  Flame,
-  Coins,
-  TrendingUp,
-  Activity,
-  Users,
-  RotateCw,
-  Gift,
-  Video,
   PlayCircle,
-  Wallet,
   Trophy,
   Plug,
   Target,
+  Gift,
   Repeat,
+  Video,
+  Rocket,
+  Database,
 } from "lucide-react";
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import txSecurity from "@/assets/tx-security.mp4.asset.json";
 import txBreach from "@/assets/tx-breach.mov.asset.json";
@@ -32,6 +26,7 @@ import phantomGhost from "@/assets/phantom-ghost.asset.json";
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const PUMP_URL = "https://pump.fun";
+
 
 /* ---------- Live mock numbers ---------- */
 const TESLA_POWER_PCT = 47.3;
