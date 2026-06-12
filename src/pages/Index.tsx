@@ -500,6 +500,36 @@ const Stat = ({ label, value, highlight }: { label: string; value: string; highl
   </div>
 );
 
+const CAStat = ({ ca }: { ca: string }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(ca);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="group flex flex-col rounded-lg border border-matrix/30 bg-black/40 p-2.5 text-left transition hover:border-matrix/70"
+    >
+      <span className="flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
+        CA
+        {copied ? (
+          <Check className="h-3 w-3 text-matrix" />
+        ) : (
+          <Copy className="h-3 w-3 text-matrix opacity-70 group-hover:opacity-100" />
+        )}
+      </span>
+      <span className="mt-0.5 truncate font-mono text-sm font-bold text-matrix">
+        {ca.slice(0, 4)}…{ca.slice(-4)}
+      </span>
+    </button>
+  );
+};
+
 const ScanlineOverlay = () => (
   <div
     className="pointer-events-none absolute inset-0 z-[1] opacity-[0.06]"
