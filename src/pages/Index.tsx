@@ -1,8 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import {
-  Terminal,
   Radio,
-
   Swords,
   Clock,
   Lock,
@@ -15,6 +13,10 @@ import {
   Video,
   Rocket,
   Database,
+  Zap,
+  Copy,
+  Check,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import txSecurity from "@/assets/tx-security.mp4.asset.json";
@@ -26,6 +28,10 @@ import phantomGhost from "@/assets/phantom-ghost.asset.json";
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const PUMP_URL = "https://pump.fun";
+const VSAI_CA = "VsAi1111111111111111111111111111111111111111";
+const BUY_URL = `https://phantom.app/ul/browse/${encodeURIComponent(
+  `https://jup.ag/swap/SOL-${VSAI_CA}`,
+)}/jup.ag`;
 
 
 /* ---------- Live mock numbers ---------- */
@@ -38,15 +44,18 @@ const USD_VALUE = 31_420;
 
 type WalletState =
   | { status: "disconnected" }
-  | { status: "connected"; address: string; position: null }
+  | { status: "connected"; address: string; balance: 0; position: null }
+  | { status: "connected"; address: string; balance: number; position: null }
   | {
       status: "connected";
       address: string;
+      balance: number;
       position: { side: "tesla" | "gpt"; amount: number; sol: number; usd: number };
     }
   | {
       status: "connected";
       address: string;
+      balance: number;
       claim: { side: "tesla" | "gpt"; principal: number; bonus: number };
     };
 
@@ -60,6 +69,7 @@ const Index = () => {
     setWallet({
       status: "connected",
       address: "7xKXtg2CW8Df4Hk9JpQ1mZbN3vRuLs6yPqA8oE5dF1nB",
+      balance: 250_000,
       position: null,
     });
 
@@ -69,6 +79,7 @@ const Index = () => {
         ? {
             status: "connected",
             address: w.address,
+            balance: w.balance,
             position: { side, amount: 250_000, sol: 0.42, usd: 78 },
           }
         : w,
@@ -80,6 +91,7 @@ const Index = () => {
         ? {
             status: "connected",
             address: w.address,
+            balance: w.balance,
             claim: { side: "gpt", principal: 250_000, bonus: 38_500 },
           }
         : w,
@@ -107,11 +119,18 @@ const Index = () => {
           </span>
         </a>
 
-        {/* Center — branding */}
-        <div className="flex items-center gap-1.5 font-black tracking-tight">
-          <Terminal className="h-4 w-4 text-matrix" />
-          <span className="text-matrix text-glow text-sm md:text-base">$VSAI</span>
-        </div>
+        {/* Center — Buy $VSAI primary action */}
+        <a
+          href={BUY_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center gap-1.5 rounded-full bg-matrix px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-background transition hover:opacity-90"
+          style={{ boxShadow: "0 0 22px hsl(var(--matrix) / 0.6)" }}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          Buy <span className="hidden sm:inline">$VSAI</span>
+        </a>
+
 
         {/* Right — Phantom */}
         <div className="flex flex-col items-end gap-0.5">
@@ -210,15 +229,14 @@ const Index = () => {
             <ActionPanel wallet={wallet} onConnect={connect} onPick={pick} onClaimDemo={simulateClaim} onReset={reset} />
           </div>
 
-          {/* Stats — protocol when disconnected, position when connected */}
-          {wallet.status === "disconnected" ? (
-            <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
-              <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
-              <Stat label="≈ SOL" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
-              <Stat label="≈ USD" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
-              <Stat label="Last Winner" value="GPT" highlight />
-            </div>
-          ) : "position" in wallet && wallet.position ? (
+          {/* Stats — protocol grid (always visible) + position when connected */}
+          <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
+            <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
+            <Stat label="SOL Locked" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
+            <Stat label="USD Value" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
+            <CAStat ca={VSAI_CA} />
+          </div>
+          {wallet.status === "connected" && "position" in wallet && wallet.position ? (
             <YourPositionStats position={wallet.position} />
           ) : null}
         </div>
@@ -388,7 +406,23 @@ const ActionPanel = ({
     );
   }
 
-  // 2) Connected, no position
+  // 2a) Connected but no $VSAI balance → push to buy
+  if (wallet.balance <= 0) {
+    return (
+      <a
+        href={BUY_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-matrix py-4 text-sm font-bold uppercase tracking-[0.2em] text-background hover:opacity-90"
+        style={{ boxShadow: "0 0 28px hsl(var(--matrix) / 0.6)" }}
+      >
+        <ShoppingCart className="h-5 w-5" />
+        Buy $VSAI to Enter the Battle
+      </a>
+    );
+  }
+
+  // 2b) Connected, no position
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <Button
@@ -465,6 +499,36 @@ const Stat = ({ label, value, highlight }: { label: string; value: string; highl
     </p>
   </div>
 );
+
+const CAStat = ({ ca }: { ca: string }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(ca);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="group flex flex-col rounded-lg border border-matrix/30 bg-black/40 p-2.5 text-left transition hover:border-matrix/70"
+    >
+      <span className="flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
+        CA
+        {copied ? (
+          <Check className="h-3 w-3 text-matrix" />
+        ) : (
+          <Copy className="h-3 w-3 text-matrix opacity-70 group-hover:opacity-100" />
+        )}
+      </span>
+      <span className="mt-0.5 truncate font-mono text-sm font-bold text-matrix">
+        {ca.slice(0, 4)}…{ca.slice(-4)}
+      </span>
+    </button>
+  );
+};
 
 const ScanlineOverlay = () => (
   <div
