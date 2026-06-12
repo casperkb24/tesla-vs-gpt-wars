@@ -44,15 +44,18 @@ const USD_VALUE = 31_420;
 
 type WalletState =
   | { status: "disconnected" }
-  | { status: "connected"; address: string; position: null }
+  | { status: "connected"; address: string; balance: 0; position: null }
+  | { status: "connected"; address: string; balance: number; position: null }
   | {
       status: "connected";
       address: string;
+      balance: number;
       position: { side: "tesla" | "gpt"; amount: number; sol: number; usd: number };
     }
   | {
       status: "connected";
       address: string;
+      balance: number;
       claim: { side: "tesla" | "gpt"; principal: number; bonus: number };
     };
 
