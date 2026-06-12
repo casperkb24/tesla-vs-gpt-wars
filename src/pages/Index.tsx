@@ -140,19 +140,25 @@ const Index = () => {
         <div className="relative overflow-hidden rounded-2xl border border-matrix/50 bg-black/80 p-4 md:p-8 backdrop-blur shadow-[0_0_60px_-20px_hsl(var(--matrix)/0.6)]">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-matrix to-transparent" />
 
-          {/* Status row */}
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.25em]">
-            <span className="flex items-center gap-2 text-matrix">
-              <Swords className="h-3 w-3 animate-pulse" />
-              battle #047
-              <span className="rounded-sm border border-matrix/40 bg-matrix/10 px-1.5 py-0.5 text-[9px]">
-                in progress
-              </span>
-            </span>
-            <span className="flex items-center gap-1.5 text-muted-foreground">
+          {/* Status row — prominent */}
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-matrix">
+                <Swords className="h-3 w-3 animate-pulse" />
+                battle #047
+                <span className="rounded-sm border border-matrix/40 bg-matrix/10 px-1.5 py-0.5 text-[9px]">
+                  in progress
+                </span>
+              </p>
+              <p className="mt-1 font-mono text-base md:text-xl font-black tracking-tight">
+                <span className="text-muted-foreground">resolves</span>{" "}
+                <BattleCountdown />
+              </p>
+            </div>
+            <p className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
               <Clock className="h-3 w-3" />
-              resolves <BattleCountdown />
-            </span>
+              24h cycle
+            </p>
           </div>
 
           {/* Side headers */}
