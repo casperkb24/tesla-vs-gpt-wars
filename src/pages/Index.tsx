@@ -196,13 +196,17 @@ const Index = () => {
             <ActionPanel wallet={wallet} onConnect={connect} onPick={pick} onClaimDemo={simulateClaim} onReset={reset} />
           </div>
 
-          {/* Pool stats */}
-          <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Stat label="Pool" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
-            <Stat label="≈ SOL" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
-            <Stat label="≈ USD" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
-            <Stat label="Last Winner" value="GPT" highlight />
-          </div>
+          {/* Stats — protocol when disconnected, position when connected */}
+          {wallet.status === "disconnected" ? (
+            <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
+              <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
+              <Stat label="≈ SOL" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
+              <Stat label="≈ USD" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
+              <Stat label="Last Winner" value="GPT" highlight />
+            </div>
+          ) : "position" in wallet && wallet.position ? (
+            <YourPositionStats position={wallet.position} />
+          ) : null}
         </div>
       </section>
 
@@ -218,29 +222,11 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ====== WEEKLY VAULT SURVEILLANCE ====== */}
-      <Section eyebrow="// reserve activity" title="Weekly Vault Surveillance">
+      {/* ====== BATTLE ARENAS ====== */}
+      <Section eyebrow="// battle arenas" title="Battle Arenas">
         <div className="grid gap-3 md:grid-cols-3">
-          {vaultEvents.map((op) => (
-            <VaultEventCard key={op.name} {...op} />
-          ))}
-        </div>
-      </Section>
-
-      {/* ====== MILESTONES ====== */}
-      <Section eyebrow="// community goals" title="Milestones">
-        <div className="grid gap-2 md:grid-cols-2">
-          {milestones.map((m) => (
-            <MilestoneRow key={m.label} {...m} />
-          ))}
-        </div>
-      </Section>
-
-      {/* ====== TRANSMISSIONS ====== */}
-      <Section eyebrow="// transmission archive" title="Recovered Footage">
-        <div className="grid gap-3 md:grid-cols-3">
-          {transmissions.map((t) => (
-            <TransmissionCard key={t.title} {...t} />
+          {arenas.map((t) => (
+            <ArenaCard key={t.title} {...t} />
           ))}
         </div>
         <p className="mt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -252,7 +238,6 @@ const Index = () => {
         </p>
       </Section>
 
-      {/* Footer */}
       <footer className="relative z-10 border-t border-matrix/10 px-5 py-8 md:px-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
