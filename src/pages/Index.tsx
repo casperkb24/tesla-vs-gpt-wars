@@ -1,8 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import {
-  Terminal,
   Radio,
-
   Swords,
   Clock,
   Lock,
@@ -15,6 +13,10 @@ import {
   Video,
   Rocket,
   Database,
+  Zap,
+  Copy,
+  Check,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import txSecurity from "@/assets/tx-security.mp4.asset.json";
@@ -26,6 +28,10 @@ import phantomGhost from "@/assets/phantom-ghost.asset.json";
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const PUMP_URL = "https://pump.fun";
+const VSAI_CA = "VsAi1111111111111111111111111111111111111111";
+const BUY_URL = `https://phantom.app/ul/browse/${encodeURIComponent(
+  `https://jup.ag/swap/SOL-${VSAI_CA}`,
+)}/jup.ag`;
 
 
 /* ---------- Live mock numbers ---------- */
