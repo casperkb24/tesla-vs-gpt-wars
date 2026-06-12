@@ -229,15 +229,14 @@ const Index = () => {
             <ActionPanel wallet={wallet} onConnect={connect} onPick={pick} onClaimDemo={simulateClaim} onReset={reset} />
           </div>
 
-          {/* Stats — protocol when disconnected, position when connected */}
-          {wallet.status === "disconnected" ? (
-            <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
-              <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
-              <Stat label="≈ SOL" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
-              <Stat label="≈ USD" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
-              <Stat label="Last Winner" value="GPT" highlight />
-            </div>
-          ) : "position" in wallet && wallet.position ? (
+          {/* Stats — protocol grid (always visible) + position when connected */}
+          <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
+            <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
+            <Stat label="SOL Locked" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
+            <Stat label="USD Value" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
+            <CAStat ca={VSAI_CA} />
+          </div>
+          {wallet.status === "connected" && "position" in wallet && wallet.position ? (
             <YourPositionStats position={wallet.position} />
           ) : null}
         </div>
