@@ -114,8 +114,16 @@ const Index = () => {
         </div>
 
         {/* Right — Phantom */}
-        <PhantomButton wallet={wallet} onConnect={connect} />
+        <div className="flex flex-col items-end gap-0.5">
+          <PhantomButton wallet={wallet} onConnect={connect} />
+          {wallet.status === "connected" && (
+            <span className="text-[8px] md:text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
+              Connected: {short(wallet.address)}
+            </span>
+          )}
+        </div>
       </header>
+
 
       {/* ====== HERO ====== */}
       <section className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 pt-5 pb-3 text-center md:pt-8">
