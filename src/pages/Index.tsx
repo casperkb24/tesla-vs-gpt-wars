@@ -19,6 +19,10 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useBattleReadOnly, type UiWalletState } from "@/hooks/useBattleReadOnly";
+import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { DEFAULT_PUBLIC_KEY, FALLBACK_DEVNET_VSAI_MINT } from "@/lib/solana/constants";
+import { buildClaimTransaction, buildLockTokensTransaction, getConnection, type EscrowReadState } from "@/lib/solana/escrowClient";
 import txSecurity from "@/assets/tx-security.mp4.asset.json";
 import txBreach from "@/assets/tx-breach.mov.asset.json";
 import txIncoming from "@/assets/tx-incoming.mp4.asset.json";
@@ -28,76 +32,528 @@ import phantomGhost from "@/assets/phantom-ghost.asset.json";
 const TELEGRAM_URL = "https://t.me/AI_war_casperKObe24";
 const X_URL = "https://x.com/casperkobe24?s=21";
 const PUMP_URL = "https://pump.fun";
-const VSAI_CA = "VsAi1111111111111111111111111111111111111111";
-const BUY_URL = `https://phantom.app/ul/browse/${encodeURIComponent(
-  `https://jup.ag/swap/SOL-${VSAI_CA}`,
-)}/jup.ag`;
 
-
-/* ---------- Live mock numbers ---------- */
-const TESLA_POWER_PCT = 47.3;
-const GPT_POWER_PCT = 52.7;
-const TESLA_SUPPLY = 42_730_000;
-const GPT_SUPPLY = 47_620_000;
-const SOL_VALUE = 184.6;
-const USD_VALUE = 31_420;
-
-type WalletState =
-  | { status: "disconnected" }
-  | { status: "connected"; address: string; balance: 0; position: null }
-  | { status: "connected"; address: string; balance: number; position: null }
-  | {
-      status: "connected";
-      address: string;
-      balance: number;
-      position: { side: "tesla" | "gpt"; amount: number; sol: number; usd: number };
-    }
-  | {
-      status: "connected";
-      address: string;
-      balance: number;
-      claim: { side: "tesla" | "gpt"; principal: number; bonus: number };
-    };
+type WalletState = UiWalletState;
 
 const short = (a: string) => `${a.slice(0, 4)}…${a.slice(-4)}`;
+const formatTokenAmount = (amount: number) =>
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(amount);
+const formatPct = (amount: number) =>
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(amount);
+const formatSol = (amount: number | null) =>
+  amount === null ? "◎ --" : `◎ ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(amount)}`;
+const DEVNET_LOCK_AMOUNT = 1;
+
+const serializeWalletError = (error: unknown) => {
+  const walletError = error as {
+    code?: unknown;
+    name?: unknown;
+    message?: unknown;
+    stack?: unknown;
+    originalError?: unknown;
+    walletError?: unknown;
+    phantomError?: unknown;
+  };
+
+  return {
+    code: walletError?.code,
+    name: walletError?.name,
+    message: walletError?.message,
+    stack: walletError?.stack,
+    originalError: walletError?.originalError,
+    walletError: walletError?.walletError,
+    phantomError: walletError?.phantomError,
+  };
+};
+
+const snapshotTransaction = (transaction: import("@solana/web3.js").Transaction) => {
+  let serializedBase64: string | null = null;
+  let serializationError: string | null = null;
+
+  try {
+    serializedBase64 = transaction
+      .serialize({ requireAllSignatures: false, verifySignatures: false })
+      .toString("base64");
+  } catch (error) {
+    serializationError = error instanceof Error ? error.message : "Unable to serialize transaction.";
+  }
+
+  return {
+    feePayer: transaction.feePayer?.toBase58() ?? null,
+    recentBlockhash: transaction.recentBlockhash ?? null,
+    lastValidBlockHeight: transaction.lastValidBlockHeight ?? null,
+    signatures: transaction.signatures.map((signature) => ({
+      publicKey: signature.publicKey.toBase58(),
+      signature: signature.signature ? Buffer.from(signature.signature).toString("base64") : null,
+    })),
+    instructionCount: transaction.instructions.length,
+    instructions: transaction.instructions.map((instruction, index) => ({
+      index,
+      programId: instruction.programId.toBase58(),
+      keys: instruction.keys.map((key) => ({
+        pubkey: key.pubkey.toBase58(),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable,
+      })),
+      dataBase64: Buffer.from(instruction.data).toString("base64"),
+    })),
+    serializedBase64,
+    serializedLength: serializedBase64 ? Buffer.from(serializedBase64, "base64").length : null,
+    serializationError,
+  };
+};
+
+const logTransactionSnapshot = (
+  label: string,
+  snapshot: ReturnType<typeof snapshotTransaction> | Record<string, unknown>,
+) => {
+  console.log(label, snapshot);
+  console.log(`${label} JSON`, JSON.stringify(snapshot, null, 2));
+};
+
+const compareTransactions = (
+  locallySimulated: ReturnType<typeof snapshotTransaction>,
+  phantomHandoff: ReturnType<typeof snapshotTransaction>,
+) => ({
+  feePayer: {
+    local: locallySimulated.feePayer,
+    phantom: phantomHandoff.feePayer,
+    same: locallySimulated.feePayer === phantomHandoff.feePayer,
+  },
+  recentBlockhash: {
+    local: locallySimulated.recentBlockhash,
+    phantom: phantomHandoff.recentBlockhash,
+    same: locallySimulated.recentBlockhash === phantomHandoff.recentBlockhash,
+  },
+  lastValidBlockHeight: {
+    local: locallySimulated.lastValidBlockHeight,
+    phantom: phantomHandoff.lastValidBlockHeight,
+    same: locallySimulated.lastValidBlockHeight === phantomHandoff.lastValidBlockHeight,
+  },
+  signatures: {
+    local: locallySimulated.signatures,
+    phantom: phantomHandoff.signatures,
+    same: JSON.stringify(locallySimulated.signatures) === JSON.stringify(phantomHandoff.signatures),
+  },
+  instructionCount: {
+    local: locallySimulated.instructionCount,
+    phantom: phantomHandoff.instructionCount,
+    same: locallySimulated.instructionCount === phantomHandoff.instructionCount,
+  },
+  instructionProgramIds: {
+    local: locallySimulated.instructions.map((instruction) => instruction.programId),
+    phantom: phantomHandoff.instructions.map((instruction) => instruction.programId),
+    same:
+      JSON.stringify(locallySimulated.instructions.map((instruction) => instruction.programId)) ===
+      JSON.stringify(phantomHandoff.instructions.map((instruction) => instruction.programId)),
+  },
+  instructionDataBase64: {
+    local: locallySimulated.instructions.map((instruction) => instruction.dataBase64),
+    phantom: phantomHandoff.instructions.map((instruction) => instruction.dataBase64),
+    same:
+      JSON.stringify(locallySimulated.instructions.map((instruction) => instruction.dataBase64)) ===
+      JSON.stringify(phantomHandoff.instructions.map((instruction) => instruction.dataBase64)),
+  },
+  accountMetas: {
+    local: locallySimulated.instructions.map((instruction) => instruction.keys),
+    phantom: phantomHandoff.instructions.map((instruction) => instruction.keys),
+    same:
+      JSON.stringify(locallySimulated.instructions.map((instruction) => instruction.keys)) ===
+      JSON.stringify(phantomHandoff.instructions.map((instruction) => instruction.keys)),
+  },
+  serializedBase64: {
+    local: locallySimulated.serializedBase64,
+    phantom: phantomHandoff.serializedBase64,
+    same: locallySimulated.serializedBase64 === phantomHandoff.serializedBase64,
+  },
+  serializedLength: {
+    local: locallySimulated.serializedLength,
+    phantom: phantomHandoff.serializedLength,
+    same: locallySimulated.serializedLength === phantomHandoff.serializedLength,
+  },
+});
 
 const Index = () => {
-  // Demo wallet — cycles through states so the UI is reviewable.
-  const [wallet, setWallet] = useState<WalletState>({ status: "disconnected" });
+  const phantom = usePhantomWallet();
+  const battleRead = useBattleReadOnly(phantom.publicKey, phantom.address);
+  const [lockStatus, setLockStatus] = useState<string | null>(null);
+  const [lockPendingSide, setLockPendingSide] = useState<"tesla" | "gpt" | null>(null);
+  const [claimStatus, setClaimStatus] = useState<string | null>(null);
+  const [claimPending, setClaimPending] = useState(false);
+  const wallet = battleRead.uiWallet;
+  const displayVsaiCa = battleRead.data?.vsaiMint.toBase58() ?? FALLBACK_DEVNET_VSAI_MINT.toBase58();
+  const buyUrl = `https://phantom.app/ul/browse/${encodeURIComponent(
+    `https://jup.ag/swap/SOL-${displayVsaiCa}`,
+  )}/jup.ag`;
+  const battleLabel = battleRead.data?.battle?.battleId
+    ? `battle #${battleRead.data.battle.battleId.toString()}`
+    : "battle pending";
+  const battleStatus = battleRead.data?.battle?.status === "resolved" ? "resolved" : "in progress";
+  const metrics = battleRead.data?.metrics;
+  const teslaPowerPct = metrics?.teslaPct ?? 50;
+  const gptPowerPct = metrics?.gptPct ?? 50;
+  const teslaCommitted = metrics?.teslaAmount ?? 0;
+  const gptCommitted = metrics?.gptAmount ?? 0;
+  const poolSize = metrics?.vaultAmount ?? metrics?.totalDeposited ?? 0;
+  const leaderLabel =
+    metrics?.leader === "tesla" ? "TESLA" : metrics?.leader === "gpt" ? "GPT" : "TIE";
+  const metricsSource = metrics?.source === "live-battle" ? "live vault + deposits" : "awaiting active battle";
+  const canLockSide =
+    wallet.status === "connected" &&
+    "position" in wallet &&
+    !wallet.position &&
+    wallet.balance >= DEVNET_LOCK_AMOUNT &&
+    battleRead.data?.battle?.status === "active" &&
+    Boolean(phantom.publicKey && (phantom.signTransaction || phantom.signAndSendTransaction)) &&
+    !lockPendingSide;
+  const canClaim =
+    wallet.status === "connected" &&
+    "claim" in wallet &&
+    battleRead.data?.battle?.status === "resolved" &&
+    Boolean(phantom.publicKey && (phantom.signTransaction || phantom.signAndSendTransaction)) &&
+    !claimPending;
 
-  const connect = () =>
-    setWallet({
-      status: "connected",
-      address: "7xKXtg2CW8Df4Hk9JpQ1mZbN3vRuLs6yPqA8oE5dF1nB",
-      balance: 250_000,
-      position: null,
+  const pick = async (side: "tesla" | "gpt") => {
+    if (!battleRead.data || !phantom.publicKey || (!phantom.signTransaction && !phantom.signAndSendTransaction)) {
+      setLockStatus(`${side.toUpperCase()} lock unavailable: wallet or battle state is not ready.`);
+      return;
+    }
+
+    const sideLabel = side.toUpperCase();
+    setLockPendingSide(side);
+    setLockStatus(`Preparing 1 $VSAI ${sideLabel} deposit...`);
+    let step = "start";
+    try {
+      step = "transaction build";
+      const {
+        transaction,
+        depositPda,
+        userTokenAccount,
+        vaultTokenAccount,
+        rawAmount,
+        instructionDiscriminator,
+        accountMetas,
+      } = await buildLockTokensTransaction({
+        readState: battleRead.data,
+        wallet: phantom.publicKey,
+        side,
+        amount: DEVNET_LOCK_AMOUNT,
+      });
+      step = "debug payload";
+      const debugPayload = {
+        activeBattle: battleRead.data.config?.activeBattle.toBase58() ?? null,
+        battlePda: battleRead.data.battlePda?.toBase58() ?? null,
+        mint: battleRead.data.battle?.mint.toBase58() ?? null,
+        vault: battleRead.data.battle?.vault.toBase58() ?? null,
+        wallet: phantom.publicKey.toBase58(),
+        walletTokenAccount: userTokenAccount.toBase58(),
+        vaultTokenAccount: vaultTokenAccount.toBase58(),
+        depositPda: depositPda.toBase58(),
+        side,
+        instructionDiscriminator,
+        accountMetas: accountMetas.map((meta) => ({
+          pubkey: meta.pubkey.toBase58(),
+          isSigner: meta.isSigner,
+          isWritable: meta.isWritable,
+        })),
+        amount: {
+          uiAmount: DEVNET_LOCK_AMOUNT,
+          rawAmount: rawAmount.toString(),
+        },
+      };
+      console.log(`${sideLabel} DEPOSIT DEBUG`, debugPayload);
+      const beforeSimulationSnapshot = snapshotTransaction(transaction);
+      logTransactionSnapshot(`${sideLabel} TRANSACTION SNAPSHOT BEFORE SIMULATION`, beforeSimulationSnapshot);
+
+      step = "simulateTransaction";
+      const connection = getConnection();
+      const afterFreshBlockhashSnapshot = {
+        latestBlockhash: "from direct-style builder",
+        transaction: snapshotTransaction(transaction),
+      };
+      logTransactionSnapshot(`${sideLabel} TRANSACTION SNAPSHOT AFTER DIRECT-STYLE BUILD`, afterFreshBlockhashSnapshot);
+
+      let simulation;
+      try {
+        simulation = await connection.simulateTransaction(transaction, undefined, false);
+      } catch (simulationError) {
+        console.error(`${sideLabel} DEPOSIT ERROR`, {
+          step,
+          error: simulationError,
+          message: simulationError?.message,
+          stack: simulationError?.stack,
+        });
+        throw simulationError;
+      }
+
+      console.log(`${sideLabel} DEPOSIT SIMULATION`, {
+        error: simulation.value.err,
+        logs: simulation.value.logs,
+        unitsConsumed: simulation.value.unitsConsumed,
+      });
+      const afterSimulationSnapshot = snapshotTransaction(transaction);
+      logTransactionSnapshot(`${sideLabel} TRANSACTION SNAPSHOT AFTER SIMULATION`, afterSimulationSnapshot);
+
+      if (simulation.value.err) {
+        throw new Error(`${sideLabel} deposit simulation failed: ${JSON.stringify(simulation.value.err)}`);
+      }
+
+      step = "sendTransaction";
+      setLockStatus(`Preparing fresh Phantom transaction. Deposit PDA: ${depositPda.toBase58()}`);
+      const {
+        transaction: transactionForPhantom,
+        latest: phantomLatest,
+      } = await buildLockTokensTransaction({
+        readState: battleRead.data,
+        wallet: phantom.publicKey,
+        side,
+        amount: DEVNET_LOCK_AMOUNT,
+      });
+      const beforePhantomSnapshot = snapshotTransaction(transactionForPhantom);
+      const transactionComparison = compareTransactions(afterSimulationSnapshot, beforePhantomSnapshot);
+      const handoffDebug = {
+        sameTransactionObject: transactionForPhantom === transaction,
+        simulationTransactionWasReused: false,
+        phantomBuilderLatestBlockhash: phantomLatest,
+        phantomFreshBlockhash: "from direct-style builder",
+        preferredPhantomPath: phantom.signTransaction ? "signTransaction + sendRawTransaction" : "signAndSendTransaction",
+        serializedEquality: {
+          beforeSimulationVsAfterSimulation:
+            beforeSimulationSnapshot.serializedBase64 === afterSimulationSnapshot.serializedBase64,
+          afterFreshBlockhashVsAfterSimulation:
+            afterFreshBlockhashSnapshot.transaction.serializedBase64 === afterSimulationSnapshot.serializedBase64,
+          afterSimulationVsBeforePhantom:
+            afterSimulationSnapshot.serializedBase64 === beforePhantomSnapshot.serializedBase64,
+        },
+        feePayer: beforePhantomSnapshot.feePayer,
+        recentBlockhash: beforePhantomSnapshot.recentBlockhash,
+        lastValidBlockHeight: beforePhantomSnapshot.lastValidBlockHeight,
+        signatures: beforePhantomSnapshot.signatures,
+        instructionCount: beforePhantomSnapshot.instructionCount,
+        serializedLength: beforePhantomSnapshot.serializedLength,
+        comparisonToLocallySimulatedTransaction: transactionComparison,
+        transaction: beforePhantomSnapshot,
+      };
+      logTransactionSnapshot(`${sideLabel} PHANTOM HANDOFF DEBUG`, handoffDebug);
+      setLockStatus(`Approve in Phantom. Deposit PDA: ${depositPda.toBase58()}`);
+      let signature: string;
+      try {
+        if (phantom.signTransaction) {
+          const signedTransaction = await phantom.signTransaction(transactionForPhantom);
+          const signedSnapshot = snapshotTransaction(signedTransaction);
+          console.log(`${sideLabel} SIGN RESULT`, signedTransaction);
+          logTransactionSnapshot(`${sideLabel} SIGNED TRANSACTION SNAPSHOT`, signedSnapshot);
+          const serializedSignedTransaction = signedTransaction.serialize();
+          console.log(`${sideLabel} SEND RAW DEBUG`, {
+            serializedSignedLength: serializedSignedTransaction.length,
+            serializedSignedBase64: Buffer.from(serializedSignedTransaction).toString("base64"),
+          });
+          signature = await connection.sendRawTransaction(serializedSignedTransaction, {
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+          });
+          console.log(`${sideLabel} SEND RESULT`, { signature, path: "signTransaction + sendRawTransaction" });
+        } else {
+          const result = await phantom.signAndSendTransaction(transactionForPhantom);
+          console.log(`${sideLabel} SEND RESULT`, { ...result, path: "signAndSendTransaction" });
+          signature = result.signature;
+        }
+      } catch (sendError) {
+        console.error(`${sideLabel} SEND ERROR`, serializeWalletError(sendError));
+        throw sendError;
+      }
+
+      step = "confirmTransaction";
+      setLockStatus(`Submitted. Confirming: ${signature}`);
+      await connection.confirmTransaction(
+        {
+          signature,
+          blockhash: phantomLatest.blockhash,
+          lastValidBlockHeight: phantomLatest.lastValidBlockHeight,
+        },
+        "confirmed",
+      );
+      step = "refetch";
+      await battleRead.refetch();
+      setLockStatus(`${sideLabel} deposit confirmed: ${signature}`);
+    } catch (error) {
+      console.error(`${sideLabel} DEPOSIT ERROR`, {
+        step,
+        error,
+        message: error?.message,
+        stack: error?.stack,
+      });
+      setLockStatus(error instanceof Error ? error.message : `${sideLabel} deposit failed.`);
+    } finally {
+      setLockPendingSide(null);
+    }
+  };
+  const claim = async () => {
+    if (!battleRead.data || !phantom.publicKey || (!phantom.signTransaction && !phantom.signAndSendTransaction)) {
+      setClaimStatus("Claim unavailable: wallet or battle state is not ready.");
+      return;
+    }
+
+    setClaimPending(true);
+    setClaimStatus("Preparing claim transaction...");
+    let step = "start";
+    try {
+      step = "transaction build";
+      const {
+        transaction,
+        latest,
+        depositPda,
+        deposit,
+        userTokenAccount,
+        vaultTokenAccount,
+        instructionDiscriminator,
+        accountMetas,
+      } = await buildClaimTransaction({
+        readState: battleRead.data,
+        wallet: phantom.publicKey,
+      });
+      console.log("CLAIM DEBUG", {
+        battlePda: battleRead.data.battlePda?.toBase58() ?? null,
+        mint: battleRead.data.battle?.mint.toBase58() ?? null,
+        vault: battleRead.data.battle?.vault.toBase58() ?? null,
+        wallet: phantom.publicKey.toBase58(),
+        userTokenAccount: userTokenAccount.toBase58(),
+        vaultTokenAccount: vaultTokenAccount.toBase58(),
+        depositPda: depositPda.toBase58(),
+        depositSide: deposit.side,
+        depositAmount: deposit.amount.toString(),
+        instructionDiscriminator,
+        accountMetas: accountMetas.map((meta) => ({
+          pubkey: meta.pubkey.toBase58(),
+          isSigner: meta.isSigner,
+          isWritable: meta.isWritable,
+        })),
+      });
+      const beforeSimulationSnapshot = snapshotTransaction(transaction);
+      logTransactionSnapshot("CLAIM TRANSACTION SNAPSHOT BEFORE SIMULATION", beforeSimulationSnapshot);
+
+      step = "simulateTransaction";
+      const connection = getConnection();
+      let simulation;
+      try {
+        simulation = await connection.simulateTransaction(transaction, undefined, false);
+      } catch (simulationError) {
+        console.error("CLAIM ERROR", {
+          step,
+          error: simulationError,
+          message: simulationError?.message,
+          stack: simulationError?.stack,
+        });
+        throw simulationError;
+      }
+      console.log("CLAIM SIMULATION", {
+        error: simulation.value.err,
+        logs: simulation.value.logs,
+        unitsConsumed: simulation.value.unitsConsumed,
+      });
+      const afterSimulationSnapshot = snapshotTransaction(transaction);
+      logTransactionSnapshot("CLAIM TRANSACTION SNAPSHOT AFTER SIMULATION", afterSimulationSnapshot);
+      if (simulation.value.err) {
+        throw new Error(`Claim simulation failed: ${JSON.stringify(simulation.value.err)}`);
+      }
+
+      step = "sendTransaction";
+      setClaimStatus(`Approve claim in Phantom. Deposit PDA: ${depositPda.toBase58()}`);
+      let signature: string;
+      try {
+        if (phantom.signTransaction) {
+          const signedTransaction = await phantom.signTransaction(transaction);
+          const signedSnapshot = snapshotTransaction(signedTransaction);
+          console.log("CLAIM SIGN RESULT", signedTransaction);
+          logTransactionSnapshot("CLAIM SIGNED TRANSACTION SNAPSHOT", signedSnapshot);
+          const serializedSignedTransaction = signedTransaction.serialize();
+          console.log("CLAIM SEND RAW DEBUG", {
+            serializedSignedLength: serializedSignedTransaction.length,
+            serializedSignedBase64: Buffer.from(serializedSignedTransaction).toString("base64"),
+          });
+          signature = await connection.sendRawTransaction(serializedSignedTransaction, {
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+          });
+          console.log("CLAIM SEND RESULT", { signature, path: "signTransaction + sendRawTransaction" });
+        } else {
+          const result = await phantom.signAndSendTransaction(transaction);
+          console.log("CLAIM SEND RESULT", { ...result, path: "signAndSendTransaction" });
+          signature = result.signature;
+        }
+      } catch (sendError) {
+        console.error("CLAIM SEND ERROR", serializeWalletError(sendError));
+        throw sendError;
+      }
+
+      step = "confirmTransaction";
+      setClaimStatus(`Submitted. Confirming: ${signature}`);
+      await connection.confirmTransaction(
+        {
+          signature,
+          blockhash: latest.blockhash,
+          lastValidBlockHeight: latest.lastValidBlockHeight,
+        },
+        "confirmed",
+      );
+      step = "refetch";
+      await battleRead.refetch();
+      setClaimStatus(`Claim confirmed: ${signature}`);
+    } catch (error) {
+      console.error("CLAIM ERROR", {
+        step,
+        error,
+        message: error?.message,
+        stack: error?.stack,
+      });
+      setClaimStatus(error instanceof Error ? error.message : "Claim failed.");
+    } finally {
+      setClaimPending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!battleRead.data && !battleRead.error) return;
+
+    if (battleRead.error) {
+      console.error("VSAI Devnet escrow read failed", battleRead.error);
+      return;
+    }
+
+    const data = battleRead.data;
+    console.info("VSAI Devnet escrow read", {
+      wallet: phantom.address,
+      configPda: data.configPda.toBase58(),
+      configAccountExists: data.configRead.exists,
+      configOwner: data.configRead.owner,
+      configLamports: data.configRead.lamports,
+      configDataLength: data.configRead.dataLength,
+      configDataBase64: data.configRead.dataBase64,
+      configDataHex: data.configRead.dataHex,
+      configAdmin: data.config?.admin.toBase58() ?? null,
+      configActiveBattleRaw: data.config?.activeBattle.toBase58() ?? null,
+      configActiveBattleIsDefault: data.config?.activeBattle.equals(DEFAULT_PUBLIC_KEY) ?? null,
+      activeBattlePda: data.battlePda?.toBase58() ?? null,
+      battlePdaSource: data.battlePdaSource,
+      battleAccountStatus: data.battle?.status ?? null,
+      battleId: data.battle?.battleId.toString() ?? null,
+      battleMint: data.battle?.mint.toBase58() ?? null,
+      displayedMint: data.vsaiMint.toBase58(),
+      mintSource: data.mintSource,
+      vault: data.battle?.vault.toBase58() ?? null,
+      tokenAccount: data.tokenAccount?.toBase58() ?? null,
+      tokenBalance: data.tokenBalance,
+      metrics: data.metrics,
+      deposits: data.deposits.map((deposit) => ({
+        side: deposit.side,
+        pda: deposit.pda.toBase58(),
+        found: Boolean(deposit.account),
+        amount: deposit.account?.amount.toString() ?? null,
+        claimed: deposit.account?.claimed ?? null,
+      })),
+      uiUsing: data.battle ? "live Devnet escrow account" : "fallback mint/demo battle display",
     });
-
-  const pick = (side: "tesla" | "gpt") =>
-    setWallet((w) =>
-      w.status === "connected"
-        ? {
-            status: "connected",
-            address: w.address,
-            balance: w.balance,
-            position: { side, amount: 250_000, sol: 0.42, usd: 78 },
-          }
-        : w,
-    );
-
-  const simulateClaim = () =>
-    setWallet((w) =>
-      w.status === "connected"
-        ? {
-            status: "connected",
-            address: w.address,
-            balance: w.balance,
-            claim: { side: "gpt", principal: 250_000, bonus: 38_500 },
-          }
-        : w,
-    );
-
-  const reset = () => setWallet({ status: "disconnected" });
+  }, [battleRead.data, battleRead.error, phantom.address]);
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -121,7 +577,7 @@ const Index = () => {
 
         {/* Center — Buy $VSAI primary action */}
         <a
-          href={BUY_URL}
+          href={buyUrl}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition hover:opacity-90"
@@ -138,10 +594,15 @@ const Index = () => {
 
         {/* Right — Phantom */}
         <div className="flex flex-col items-end gap-0.5">
-          <PhantomButton wallet={wallet} onConnect={connect} />
+          <PhantomButton wallet={wallet} onConnect={phantom.connect} />
           {wallet.status === "connected" && (
             <span className="text-[8px] md:text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-mono">
               Connected: {short(wallet.address)}
+            </span>
+          )}
+          {phantom.error && (
+            <span className="max-w-[180px] text-right text-[8px] uppercase tracking-[0.18em] text-destructive">
+              {phantom.error}
             </span>
           )}
         </div>
@@ -168,9 +629,9 @@ const Index = () => {
             <div>
               <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-matrix">
                 <Swords className="h-3 w-3 animate-pulse" />
-                battle #047
+                {battleLabel}
                 <span className="rounded-sm border border-matrix/40 bg-matrix/10 px-1.5 py-0.5 text-[9px]">
-                  in progress
+                  {battleStatus}
                 </span>
               </p>
               <p className="mt-1 font-mono text-base md:text-xl font-black tracking-tight">
@@ -190,14 +651,14 @@ const Index = () => {
               <p className="text-[9px] uppercase tracking-[0.3em] text-tesla">//OPTIMUS</p>
               <h3 className="mt-0.5 text-base font-black md:text-2xl text-tesla">Tesla Bot</h3>
               <p className="mt-0.5 font-mono text-3xl md:text-5xl font-black text-tesla leading-none">
-                {TESLA_POWER_PCT}%
+                {formatPct(teslaPowerPct)}%
               </p>
             </div>
             <div className="text-right">
               <p className="text-[9px] uppercase tracking-[0.3em] text-gpt">//OMNI</p>
               <h3 className="mt-0.5 text-base font-black md:text-2xl text-gpt">GPT Bot</h3>
               <p className="mt-0.5 font-mono text-3xl md:text-5xl font-black text-gpt leading-none">
-                {GPT_POWER_PCT}%
+                {formatPct(gptPowerPct)}%
               </p>
             </div>
           </div>
@@ -206,16 +667,16 @@ const Index = () => {
           <div className="relative h-12 md:h-16 w-full overflow-hidden rounded-xl border border-matrix/30 bg-white/5">
             <div
               className="absolute inset-y-0 left-0 bg-tesla"
-              style={{ width: `${TESLA_POWER_PCT}%`, boxShadow: "0 0 24px hsl(var(--tesla))" }}
+              style={{ width: `${teslaPowerPct}%`, boxShadow: "0 0 24px hsl(var(--tesla))" }}
             />
             <div
               className="absolute inset-y-0 right-0 bg-gpt"
-              style={{ width: `${GPT_POWER_PCT}%`, boxShadow: "0 0 24px hsl(var(--gpt))" }}
+              style={{ width: `${gptPowerPct}%`, boxShadow: "0 0 24px hsl(var(--gpt))" }}
             />
             <div className="absolute inset-y-0 left-1/2 w-px bg-background/70" />
             <div className="absolute inset-0 flex items-center justify-between px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-background/90">
-              <span>{(TESLA_SUPPLY / 1_000_000).toFixed(2)}M</span>
-              <span>{(GPT_SUPPLY / 1_000_000).toFixed(2)}M</span>
+              <span>{formatTokenAmount(teslaCommitted)} $VSAI</span>
+              <span>{formatTokenAmount(gptCommitted)} $VSAI</span>
             </div>
           </div>
 
@@ -223,26 +684,49 @@ const Index = () => {
             <span className="text-tesla">Tesla committed</span>
             <span className="flex items-center gap-1.5 text-matrix">
               <Trophy className="h-3 w-3" />
-              leader · {GPT_POWER_PCT > TESLA_POWER_PCT ? "GPT" : "TESLA"}
+              leader · {leaderLabel}
             </span>
             <span className="text-gpt">GPT committed</span>
           </div>
+          <p className="mt-2 text-center text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
+            metrics · {metricsSource}
+          </p>
 
           {/* ====== ACTION STATES ====== */}
           <div className="mt-6">
-            <ActionPanel wallet={wallet} onConnect={connect} onPick={pick} onClaimDemo={simulateClaim} onReset={reset} />
+            <ActionPanel
+              wallet={wallet}
+              onConnect={phantom.connect}
+              onPick={pick}
+              onClaim={claim}
+              buyUrl={buyUrl}
+              loading={battleRead.isLoading}
+              canLockTesla={canLockSide}
+              canLockGpt={canLockSide}
+              lockPendingSide={lockPendingSide}
+              lockStatus={lockStatus}
+              canClaim={canClaim}
+              claimPending={claimPending}
+              claimStatus={claimStatus}
+            />
           </div>
 
           {/* Stats — protocol grid (always visible) + position when connected */}
           <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Stat label="Pool Size" value={`${((TESLA_SUPPLY + GPT_SUPPLY) / 1_000_000).toFixed(1)}M`} />
-            <Stat label="SOL Locked" value={`◎ ${SOL_VALUE.toFixed(1)}`} />
-            <Stat label="USD Value" value={`$${(USD_VALUE / 1000).toFixed(1)}K`} />
-            <CAStat ca={VSAI_CA} />
+            <Stat label="Pool Size" value={`${formatTokenAmount(poolSize)} $VSAI`} />
+            <Stat label="SOL Locked" value={formatSol(metrics?.solLocked ?? null)} />
+            <Stat label="Metric Source" value={metricsSource} />
+            <CAStat ca={displayVsaiCa} />
           </div>
           {wallet.status === "connected" && "position" in wallet && wallet.position ? (
             <YourPositionStats position={wallet.position} />
           ) : null}
+          <DevnetEscrowReadout
+            readState={battleRead.data}
+            walletAddress={phantom.address}
+            loading={battleRead.isLoading}
+            error={battleRead.error}
+          />
         </div>
       </section>
 
@@ -296,9 +780,123 @@ const Index = () => {
   );
 };
 
+/* ---------- Devnet Readout ---------- */
+
+const DevnetEscrowReadout = ({
+  readState,
+  walletAddress,
+  loading,
+  error,
+}: {
+  readState?: EscrowReadState;
+  walletAddress: string | null;
+  loading: boolean;
+  error: unknown;
+}) => {
+  const battle = readState?.battle;
+  const rows = [
+    ["RPC read", loading ? "loading" : error ? "failed" : "succeeded"],
+    ["Connected wallet", walletAddress ?? "not connected"],
+    ["Config PDA", readState?.configPda.toBase58() ?? "not read yet"],
+    ["Config account exists", readState ? (readState.configRead.exists ? "yes" : "no") : "not read yet"],
+    ["Config owner", readState?.configRead.owner ?? "not read yet"],
+    ["Config data length", readState ? `${readState.configRead.dataLength} bytes` : "not read yet"],
+    ["Config admin", readState?.config?.admin.toBase58() ?? "not decoded"],
+    ["Config active_battle raw", readState?.config?.activeBattle.toBase58() ?? "not decoded"],
+    [
+      "Config active_battle is default",
+      readState?.config ? (readState.config.activeBattle.equals(DEFAULT_PUBLIC_KEY) ? "yes" : "no") : "not decoded",
+    ],
+    ["Active battle PDA", readState?.battlePda?.toBase58() ?? "none"],
+    ["Battle PDA source", readState?.battlePdaSource ?? "not read yet"],
+    ["Battle account status", battle ? battle.status : readState?.battlePda ? "missing account" : "none"],
+    ["Battle mint", battle?.mint.toBase58() ?? readState?.vsaiMint.toBase58() ?? "not read yet"],
+    ["Mint source", readState?.mintSource ?? "not read yet"],
+    ["Vault", battle?.vault.toBase58() ?? "not available"],
+    ["Wallet token account", readState?.tokenAccount?.toBase58() ?? (walletAddress ? "missing or unread" : "not connected")],
+    ["Wallet $VSAI balance", readState ? readState.tokenBalance.toLocaleString("en-US") : "not read yet"],
+    ["Battle deposit accounts", readState ? `${readState.battleDeposits.length}` : "not read yet"],
+    ["Vault token balance", readState?.metrics.vaultAmount === null || !readState ? "not available" : `${formatTokenAmount(readState.metrics.vaultAmount)} $VSAI`],
+    ["Tesla committed live", readState ? `${formatTokenAmount(readState.metrics.teslaAmount)} $VSAI` : "not read yet"],
+    ["GPT committed live", readState ? `${formatTokenAmount(readState.metrics.gptAmount)} $VSAI` : "not read yet"],
+    ["Battle power live", readState ? `${formatPct(readState.metrics.teslaPct)}% / ${formatPct(readState.metrics.gptPct)}%` : "not read yet"],
+    [
+      "SOL locked source",
+      readState
+        ? readState.metrics.solLocked === null
+          ? "not priced; set VITE_VSAI_SOL_PRICE to estimate"
+          : `${formatSol(readState.metrics.solLocked)} from VITE_VSAI_SOL_PRICE`
+        : "not read yet",
+    ],
+    [
+      "UI data source",
+      battle ? "live Devnet escrow account" : readState ? "fallback mint/demo battle display" : "not read yet",
+    ],
+  ];
+
+  return (
+    <div className="mt-5 rounded-xl border border-matrix/20 bg-black/55 p-3 md:p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-matrix">Devnet Escrow Readout</p>
+        <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
+          Pick / Claim disabled in Phase 1
+        </p>
+      </div>
+      {error ? (
+        <p className="mt-2 break-words rounded-lg border border-destructive/30 bg-destructive/10 p-2 font-mono text-[10px] text-destructive">
+          {error instanceof Error ? error.message : "Read failed"}
+        </p>
+      ) : null}
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        {rows.map(([label, value]) => (
+          <ReadoutRow key={label} label={label} value={value} />
+        ))}
+      </div>
+      <div className="mt-3 rounded-lg border border-white/5 bg-black/40 p-2">
+        <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Exact config data returned</p>
+        <p className="mt-1 break-all font-mono text-[10px] text-foreground">
+          base64: {readState?.configRead.dataBase64 ?? "not read yet"}
+        </p>
+        <p className="mt-1 break-all font-mono text-[10px] text-muted-foreground">
+          hex: {readState?.configRead.dataHex ?? "not read yet"}
+        </p>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        {(["tesla", "gpt"] as const).map((side) => {
+          const deposit = readState?.deposits.find((entry) => entry.side === side);
+          return (
+            <div key={side} className="rounded-lg border border-white/5 bg-black/40 p-2">
+              <p className={`text-[9px] uppercase tracking-[0.25em] ${side === "tesla" ? "text-tesla" : "text-gpt"}`}>
+                {side} deposit read
+              </p>
+              <p className="mt-1 break-all font-mono text-[10px] text-muted-foreground">
+                PDA: {deposit?.pda.toBase58() ?? (walletAddress && readState?.battlePda ? "deriving..." : "not read")}
+              </p>
+              <p className="mt-1 font-mono text-[10px] text-foreground">
+                {deposit?.account
+                  ? `found · amount ${deposit.account.amount.toString()} · claimed ${deposit.account.claimed ? "yes" : "no"}`
+                  : deposit
+                    ? "no deposit account found"
+                    : "not read"}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ReadoutRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="rounded-lg border border-white/5 bg-black/40 p-2">
+    <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
+    <p className="mt-1 break-all font-mono text-[10px] text-foreground">{value}</p>
+  </div>
+);
+
 /* ---------- Phantom Button ---------- */
 
-const PhantomButton = ({ wallet, onConnect }: { wallet: WalletState; onConnect: () => void }) => {
+const PhantomButton = ({ wallet, onConnect }: { wallet: WalletState; onConnect: () => void | Promise<void> }) => {
   if (wallet.status === "disconnected") {
     return (
       <button
@@ -328,15 +926,34 @@ const ActionPanel = ({
   wallet,
   onConnect,
   onPick,
-  onClaimDemo,
-  onReset,
+  onClaim,
+  buyUrl,
+  loading,
+  canLockTesla,
+  canLockGpt,
+  lockPendingSide,
+  lockStatus,
+  canClaim,
+  claimPending,
+  claimStatus,
 }: {
   wallet: WalletState;
-  onConnect: () => void;
-  onPick: (s: "tesla" | "gpt") => void;
-  onClaimDemo: () => void;
-  onReset: () => void;
+  onConnect: () => void | Promise<void>;
+  onPick: (s: "tesla" | "gpt") => void | Promise<void>;
+  onClaim: () => void;
+  buyUrl: string;
+  loading?: boolean;
+  canLockTesla: boolean;
+  canLockGpt: boolean;
+  lockPendingSide: "tesla" | "gpt" | null;
+  lockStatus: string | null;
+  canClaim: boolean;
+  claimPending: boolean;
+  claimStatus: string | null;
 }) => {
+  const formatVsai = (amount: number) =>
+    new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(amount);
+
   // 1) Disconnected → big Connect Phantom
   if (wallet.status === "disconnected") {
     return (
@@ -351,6 +968,16 @@ const ActionPanel = ({
     );
   }
 
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-matrix/30 bg-black/50 p-4 text-center">
+        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-matrix">
+          Reading Devnet Battle State
+        </p>
+      </div>
+    );
+  }
+
   // 4) Claim available
   if ("claim" in wallet) {
     const { claim } = wallet;
@@ -360,20 +987,26 @@ const ActionPanel = ({
           <span className="flex items-center gap-1.5">
             <Gift className="h-3.5 w-3.5" /> claim available
           </span>
-          <span>battle #046 resolved</span>
+          <span>{claim.battleId ? `battle #${claim.battleId} resolved` : "battle resolved"}</span>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3 text-center md:grid-cols-3">
           <MiniStat label="Side" value={claim.side.toUpperCase()} accent={claim.side} />
-          <MiniStat label="Principal" value={`${(claim.principal / 1000).toFixed(0)}K`} />
-          <MiniStat label="Bonus" value={`+${(claim.bonus / 1000).toFixed(1)}K`} accent="matrix" />
+          <MiniStat label="Principal" value={`${formatVsai(claim.principal)} $VSAI`} />
+          <MiniStat label="Bonus" value={`+${formatVsai(claim.bonus)} $VSAI`} accent="matrix" />
         </div>
         <Button
-          onClick={onReset}
+          onClick={onClaim}
+          disabled={!canClaim}
           className="mt-4 h-14 w-full text-base font-bold uppercase tracking-[0.2em] text-background"
           style={{ backgroundColor: "hsl(var(--matrix))", boxShadow: "0 0 28px hsl(var(--matrix)/0.6)" }}
         >
-          <Gift className="mr-2 h-5 w-5" /> Claim Tokens + Rewards
+          <Gift className="mr-2 h-5 w-5" /> {claimPending ? "Claiming..." : "Claim Tokens + Rewards"}
         </Button>
+        {claimStatus ? (
+          <p className="mt-3 break-words rounded-lg border border-matrix/30 bg-black/40 p-2 font-mono text-[10px] text-matrix">
+            {claimStatus}
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -383,27 +1016,32 @@ const ActionPanel = ({
     const p = wallet.position;
     const accent = p.side === "tesla" ? "tesla" : "gpt";
     return (
-      <div className={`rounded-xl border bg-black/50 p-4 md:p-5 border-${accent}/50`}>
+      <div
+        className={`rounded-xl border bg-black/50 p-4 md:p-5 ${
+          accent === "tesla" ? "border-tesla/50" : "border-gpt/50"
+        }`}
+      >
         <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em]">
-          <span className={`flex items-center gap-1.5 text-${accent}`}>
+          <span className={`flex items-center gap-1.5 ${accent === "tesla" ? "text-tesla" : "text-gpt"}`}>
             <Lock className="h-3.5 w-3.5" /> position active
           </span>
           <span className="text-muted-foreground">
-            resolves <BattleCountdown />
+            resolves <span className="font-mono text-matrix">in {p.timeRemaining}</span>
           </span>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
           <MiniStat label="Side" value={p.side.toUpperCase()} accent={accent} />
-          <MiniStat label="Locked" value={`${(p.amount / 1000).toFixed(0)}K $VSAI`} />
+          <MiniStat label="Locked" value={`${formatVsai(p.amount)} $VSAI`} />
           <MiniStat label="≈ SOL" value={`◎ ${p.sol}`} />
           <MiniStat label="≈ USD" value={`$${p.usd}`} />
         </div>
         <div className="mt-3 flex items-center justify-end">
           <button
-            onClick={onClaimDemo}
+            onClick={onClaim}
+            disabled
             className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground hover:text-matrix"
           >
-            simulate resolution →
+            claim enabled in phase 2 →
           </button>
         </div>
       </div>
@@ -414,7 +1052,7 @@ const ActionPanel = ({
   if (wallet.balance <= 0) {
     return (
       <a
-        href={BUY_URL}
+        href={buyUrl}
         target="_blank"
         rel="noreferrer"
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-matrix py-4 text-sm font-bold uppercase tracking-[0.2em] text-background hover:opacity-90"
@@ -428,21 +1066,40 @@ const ActionPanel = ({
 
   // 2b) Connected, no position
   return (
-    <div className="grid gap-3 md:grid-cols-2">
-      <Button
-        onClick={() => onPick("tesla")}
-        className="h-14 bg-tesla text-background hover:bg-tesla/90 font-bold uppercase tracking-[0.2em] border-0 text-sm"
-        style={{ boxShadow: "0 0 24px hsl(var(--tesla) / 0.55)" }}
-      >
-        Pick Tesla Bot
-      </Button>
-      <Button
-        onClick={() => onPick("gpt")}
-        className="h-14 bg-gpt text-background hover:bg-gpt/90 font-bold uppercase tracking-[0.2em] border-0 text-sm"
-        style={{ boxShadow: "0 0 24px hsl(var(--gpt) / 0.55)" }}
-      >
-        Pick GPT Bot
-      </Button>
+    <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-2">
+        <Button
+          onClick={() => onPick("tesla")}
+          disabled={!canLockTesla}
+          title={
+            canLockTesla
+              ? "Devnet test only: lock 1 fake $VSAI on Tesla."
+              : "Tesla deposit needs an active Devnet battle, connected Phantom, and at least 1 fake $VSAI."
+          }
+          className="h-14 bg-tesla text-background hover:bg-tesla/90 font-bold uppercase tracking-[0.2em] border-0 text-sm disabled:cursor-not-allowed disabled:opacity-45"
+          style={{ boxShadow: canLockTesla ? "0 0 24px hsl(var(--tesla) / 0.55)" : "none" }}
+        >
+          {lockPendingSide === "tesla" ? "Locking Tesla..." : "Lock 1 $VSAI on Tesla"}
+        </Button>
+        <Button
+          onClick={() => onPick("gpt")}
+          disabled={!canLockGpt}
+          title={
+            canLockGpt
+              ? "Devnet test only: lock 1 fake $VSAI on GPT."
+              : "GPT deposit needs an active Devnet battle, connected Phantom, and at least 1 fake $VSAI."
+          }
+          className="h-14 bg-gpt text-background hover:bg-gpt/90 font-bold uppercase tracking-[0.2em] border-0 text-sm disabled:cursor-not-allowed disabled:opacity-45"
+          style={{ boxShadow: canLockGpt ? "0 0 24px hsl(var(--gpt) / 0.55)" : "none" }}
+        >
+          {lockPendingSide === "gpt" ? "Locking GPT..." : "Lock 1 $VSAI on GPT"}
+        </Button>
+      </div>
+      {lockStatus ? (
+        <p className="break-words rounded-lg border border-tesla/30 bg-tesla/10 p-2 font-mono text-[10px] text-tesla">
+          {lockStatus}
+        </p>
+      ) : null}
     </div>
   );
 };
@@ -578,9 +1235,10 @@ const BattleCountdown = () => {
 const YourPositionStats = ({
   position,
 }: {
-  position: { side: "tesla" | "gpt"; amount: number; sol: number; usd: number };
+  position: { side: "tesla" | "gpt"; amount: number; sol: number; usd: number; timeRemaining: string };
 }) => {
   const accent = position.side;
+  const amount = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(position.amount);
   return (
     <div className="mt-5 rounded-xl border border-matrix/20 bg-black/50 p-3 md:p-4">
       <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em]">
@@ -591,15 +1249,13 @@ const YourPositionStats = ({
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-6">
         <MiniStat label="Side" value={position.side.toUpperCase()} accent={accent} />
-        <MiniStat label="Locked" value={`${(position.amount / 1000).toFixed(0)}K`} />
+        <MiniStat label="Locked" value={amount} />
         <MiniStat label="≈ SOL" value={`◎ ${position.sol}`} />
         <MiniStat label="≈ USD" value={`$${position.usd}`} />
         <MiniStat label="Status" value="LOCKED" accent="matrix" />
         <div className="rounded-lg border border-white/5 bg-black/40 p-2">
           <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Time</p>
-          <p className="mt-0.5 font-mono text-sm font-bold text-matrix">
-            <BattleCountdown />
-          </p>
+          <p className="mt-0.5 font-mono text-sm font-bold text-matrix">{position.timeRemaining}</p>
         </div>
       </div>
     </div>
