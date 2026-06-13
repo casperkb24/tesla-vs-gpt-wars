@@ -793,6 +793,7 @@ const DevnetEscrowReadout = ({
   loading: boolean;
   error: unknown;
 }) => {
+  const [expanded, setExpanded] = useState(false);
   const battle = readState?.battle;
   const rows = [
     ["RPC read", loading ? "loading" : error ? "failed" : "succeeded"],
@@ -835,53 +836,68 @@ const DevnetEscrowReadout = ({
   ];
 
   return (
-    <div className="mt-5 rounded-xl border border-matrix/20 bg-black/55 p-3 md:p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-matrix">Devnet Escrow Readout</p>
-        <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
-          Pick / Claim disabled in Phase 1
-        </p>
-      </div>
-      {error ? (
-        <p className="mt-2 break-words rounded-lg border border-destructive/30 bg-destructive/10 p-2 font-mono text-[10px] text-destructive">
-          {error instanceof Error ? error.message : "Read failed"}
-        </p>
-      ) : null}
-      <div className="mt-3 grid gap-2 md:grid-cols-2">
-        {rows.map(([label, value]) => (
-          <ReadoutRow key={label} label={label} value={value} />
-        ))}
-      </div>
-      <div className="mt-3 rounded-lg border border-white/5 bg-black/40 p-2">
-        <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Exact config data returned</p>
-        <p className="mt-1 break-all font-mono text-[10px] text-foreground">
-          base64: {readState?.configRead.dataBase64 ?? "not read yet"}
-        </p>
-        <p className="mt-1 break-all font-mono text-[10px] text-muted-foreground">
-          hex: {readState?.configRead.dataHex ?? "not read yet"}
-        </p>
-      </div>
-      <div className="mt-3 grid gap-2 md:grid-cols-2">
-        {(["tesla", "gpt"] as const).map((side) => {
-          const deposit = readState?.deposits.find((entry) => entry.side === side);
-          return (
-            <div key={side} className="rounded-lg border border-white/5 bg-black/40 p-2">
-              <p className={`text-[9px] uppercase tracking-[0.25em] ${side === "tesla" ? "text-tesla" : "text-gpt"}`}>
-                {side} deposit read
-              </p>
-              <p className="mt-1 break-all font-mono text-[10px] text-muted-foreground">
-                PDA: {deposit?.pda.toBase58() ?? (walletAddress && readState?.battlePda ? "deriving..." : "not read")}
-              </p>
-              <p className="mt-1 font-mono text-[10px] text-foreground">
-                {deposit?.account
-                  ? `found · amount ${deposit.account.amount.toString()} · claimed ${deposit.account.claimed ? "yes" : "no"}`
-                  : deposit
-                    ? "no deposit account found"
-                    : "not read"}
+    <div className="mt-5 flex justify-center">
+      <div className="w-full max-w-4xl rounded-xl border border-matrix/15 bg-black/35">
+        <button
+          type="button"
+          onClick={() => setExpanded((current) => !current)}
+          aria-expanded={expanded}
+          className="flex w-full items-center justify-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground transition hover:text-matrix"
+        >
+          <Database className="h-3.5 w-3.5" />
+          {expanded ? "Hide Developer Diagnostics" : "Show Developer Diagnostics"}
+        </button>
+        {expanded ? (
+          <div className="border-t border-matrix/15 p-3 md:p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-matrix">Developer Diagnostics</p>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
+                Internal escrow account readout
               </p>
             </div>
-          );
-        })}
+            {error ? (
+              <p className="mt-2 break-words rounded-lg border border-destructive/30 bg-destructive/10 p-2 font-mono text-[10px] text-destructive">
+                {error instanceof Error ? error.message : "Read failed"}
+              </p>
+            ) : null}
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              {rows.map(([label, value]) => (
+                <ReadoutRow key={label} label={label} value={value} />
+              ))}
+            </div>
+            <div className="mt-3 rounded-lg border border-white/5 bg-black/40 p-2">
+              <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Exact config data returned</p>
+              <p className="mt-1 break-all font-mono text-[10px] text-foreground">
+                base64: {readState?.configRead.dataBase64 ?? "not read yet"}
+              </p>
+              <p className="mt-1 break-all font-mono text-[10px] text-muted-foreground">
+                hex: {readState?.configRead.dataHex ?? "not read yet"}
+              </p>
+            </div>
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              {(["tesla", "gpt"] as const).map((side) => {
+                const deposit = readState?.deposits.find((entry) => entry.side === side);
+                return (
+                  <div key={side} className="rounded-lg border border-white/5 bg-black/40 p-2">
+                    <p className={`text-[9px] uppercase tracking-[0.25em] ${side === "tesla" ? "text-tesla" : "text-gpt"}`}>
+                      {side} deposit read
+                    </p>
+                    <p className="mt-1 break-all font-mono text-[10px] text-muted-foreground">
+                      PDA: {deposit?.pda.toBase58() ?? (walletAddress && readState?.battlePda ? "deriving..." : "not read")}
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] text-foreground">
+                      {deposit?.account
+                        ? `found · amount ${deposit.account.amount.toString()} · claimed ${deposit.account.claimed ? "yes" : "no"}`
+                        : deposit
+                          ? "no deposit account found"
+                          : "not read"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
